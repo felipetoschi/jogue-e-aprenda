@@ -63,7 +63,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     nome: 'Expressões',
     materiaId: 'matematica',
     formato: 'resposta-curta',
-    estagioInicial: 'intermediario',
+    estagioInicial: 'basico',
     prerequisitos: [
       { habilidadeId: 'adicao', estagio: 'intermediario' },
       { habilidadeId: 'subtracao', estagio: 'intermediario' },
@@ -71,6 +71,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
       { habilidadeId: 'divisao', estagio: 'intermediario' },
     ],
     estagios: {
+      basico: 'Duas somas seguidas',
       intermediario: 'Duas operações de + e −',
       avancado: 'Com × e ÷, ordem das operações',
       mestre: 'Com parênteses',

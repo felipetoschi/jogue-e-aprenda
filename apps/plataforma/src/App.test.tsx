@@ -17,7 +17,6 @@ const perfilNoIntermediario = () =>
       ultimoDia: null,
       partidasDoDia: {},
       selos: {},
-      provas: {},
       habilidades: {
         adicao: { estagio: 'intermediario', maestria: 10, partidasNoEstagio: 1, ultimosDesempenhos: [], revisao: null, revisoesRuinsSeguidas: 0, enferrujada: false },
       },

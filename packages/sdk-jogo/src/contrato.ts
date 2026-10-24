@@ -14,8 +14,7 @@ export const NOMES_ESTAGIO: Record<Estagio, string> = {
   mestre: 'Mestre',
 };
 
-/** nivelamento = prova do próximo estágio, para quem já sabe pular o atual. */
-export type ModoPartida = 'normal' | 'revisao' | 'treino' | 'nivelamento';
+export type ModoPartida = 'normal' | 'revisao' | 'treino';
 
 /**
  * Formatos de pergunta. Cada jogo declara quais sabe mostrar; o conteúdo diz o formato de cada habilidade.

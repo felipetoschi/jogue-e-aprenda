@@ -9,7 +9,7 @@ import { calcularXp } from './xp';
 import { estadoDe } from './perfil';
 import { agendarPrimeiraRevisao, aplicarRevisao } from './revisao';
 import type { DefinicaoHabilidade, PerfilProgresso, Selo } from './tipos';
-import { diaDe, indiceEstagio, proximoEstagio, somarDias } from './util';
+import { diaDe, indiceEstagio, proximoEstagio } from './util';
 
 export interface MudancaHabilidade {
   habilidadeId: string;
@@ -24,8 +24,6 @@ export interface ResumoPartida {
   /** false para partidas que não mexem na progressão; o motivo fica em naoContou. */
   contou: boolean;
   naoContou?: 'abandono' | 'treino' | 'sem-tentativas';
-  /** Resultado da prova de nivelamento, quando a partida foi uma. */
-  nivelamento: { estagio: Estagio; aprovado: boolean } | null;
   estrelas: 0 | 1 | 2 | 3;
   xpGanho: number;
   nivelAntes: InfoNivel;
@@ -62,7 +60,6 @@ export function aplicarResultado(
       resumo: {
         contou: false,
         naoContou,
-        nivelamento: null,
         estrelas: naoContou === 'treino' ? estrelas : 0,
         xpGanho: 0,
         nivelAntes,
@@ -92,7 +89,6 @@ export function aplicarResultado(
     partidasAnterioresHoje,
   });
   let revisaoAprovada: boolean | null = null;
-  let nivelamento: ResumoPartida['nivelamento'] = null;
   const mudancas: MudancaHabilidade[] = [];
 
   for (const d of resultado.desempenho) {
@@ -110,24 +106,6 @@ export function aplicarResultado(
       estado = r.estado;
       revisaoAprovada = r.aprovada;
       if (r.aprovada) xpGanho += PARAMETROS.bonus.revisao;
-    } else if (config.modo === 'nivelamento') {
-      perfil.provas = { ...perfil.provas, [`${def.id}:${config.estagio}`]: agora.toISOString() };
-      const { notaParaPular, tentativasMinimas } = PARAMETROS.nivelamento;
-      const aprovado =
-        config.estagio === proximoEstagio(antes.estagio) && desempenho >= notaParaPular && d.tentativas >= tentativasMinimas;
-      nivelamento = { estagio: config.estagio, aprovado };
-      if (aprovado) {
-        // A prova já conta como a primeira partida do novo estágio.
-        estado = {
-          ...antes,
-          estagio: config.estagio,
-          maestria: atualizarMaestria(0, desempenho, d.tentativas),
-          partidasNoEstagio: 1,
-          ultimosDesempenhos: [Math.round(desempenho)],
-        };
-        promovido = true;
-        xpGanho += PARAMETROS.bonus.promocao;
-      }
     } else if (config.estagio === antes.estagio) {
       estado = {
         ...antes,
@@ -187,7 +165,6 @@ export function aplicarResultado(
     perfil,
     resumo: {
       contou: true,
-      nivelamento,
       estrelas,
       xpGanho,
       nivelAntes,
@@ -226,28 +203,6 @@ export function configParaPartida(
   if (modo === 'revisao' && estado.revisao) {
     return { habilidadeId: def.id, estagio: estado.revisao.estagio, ajuste: 0.5, modo };
   }
-  const proximo = proximoEstagio(estado.estagio);
-  if (modo === 'nivelamento' && proximo) {
-    return { habilidadeId: def.id, estagio: proximo, ajuste: 0.5, modo };
-  }
-  const modoFinal = modo === 'revisao' || modo === 'nivelamento' ? 'normal' : modo;
+  const modoFinal = modo === 'revisao' ? 'normal' : modo;
   return { habilidadeId: def.id, estagio: estado.estagio, ajuste: ajusteFino(estado), modo: modoFinal };
-}
-
-export interface SituacaoProva {
-  /** Estágio que a prova permite alcançar. */
-  estagio: Estagio;
-  disponivel: boolean;
-  /** Quando a próxima prova libera, se ainda estiver em espera. */
-  liberaEm: string | null;
-}
-
-/** Se o jogador pode fazer a prova para pular o estágio atual. null no Mestre. */
-export function situacaoProva(perfil: PerfilProgresso, def: DefinicaoHabilidade, agora: Date = new Date()): SituacaoProva | null {
-  const proximo = proximoEstagio(estadoDe(perfil, def).estagio);
-  if (!proximo) return null;
-  const ultima = perfil.provas?.[`${def.id}:${proximo}`];
-  const libera = ultima ? somarDias(new Date(ultima), PARAMETROS.nivelamento.diasEntreProvas) : null;
-  const disponivel = !libera || libera <= agora;
-  return { estagio: proximo, disponivel, liberaEm: disponivel ? null : libera!.toISOString() };
 }

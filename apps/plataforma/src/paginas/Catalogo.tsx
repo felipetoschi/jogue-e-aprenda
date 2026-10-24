@@ -4,12 +4,11 @@ import {
   estagiosLiberados,
   estaDesbloqueada,
   prerequisitosPendentes,
-  situacaoProva,
   sugerirProximaPartida,
 } from '@jogue/progressao';
 import { ESTAGIOS, NOMES_ESTAGIO, type Estagio, type ManifestoJogo } from '@jogue/sdk-jogo';
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
 import { habilidadesDoJogo, JOGOS, materiasDoJogo } from '../conteudo/jogos';
 import { useProgresso } from '../estado/progresso';
@@ -49,8 +48,6 @@ function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidad
   const liberados = def ? estagiosLiberados(perfil, def) : [];
   // O nível mais alto já alcançado vem selecionado.
   const nivel = escolhido && liberados.includes(escolhido) ? escolhido : atual;
-  const prova = def ? situacaoProva(perfil, def) : null;
-  const linkProva = def && prova?.disponivel ? linkParaJogar(def.id, 'nivelamento', { jogoId: jogo.id }) : null;
 
   function escolherMateria(id: string) {
     setMateriaId(id);
@@ -155,11 +152,6 @@ function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidad
         >
           Jogar
         </button>
-        {prova && linkProva && (
-          <Link className="link-discreto" to={linkProva}>
-            Já sei: prova do {NOMES_ESTAGIO[prova.estagio]}
-          </Link>
-        )}
       </div>
     </article>
   );

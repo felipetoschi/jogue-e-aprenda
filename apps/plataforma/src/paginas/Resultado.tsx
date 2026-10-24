@@ -1,4 +1,4 @@
-import { PARAMETROS, type ResumoPartida } from '@jogue/progressao';
+import type { ResumoPartida } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link, Navigate, useLocation } from 'react-router';
 import { linkParaEscolher, linkParaJogar } from '../componentes/links';
@@ -41,13 +41,6 @@ export function Resultado() {
           <p className="xp-ganho">+{resumo.xpGanho} XP</p>
         ) : (
           <p className="aviso">{AVISOS_NAO_CONTOU[resumo.naoContou ?? 'abandono']}</p>
-        )}
-        {resumo.nivelamento && (
-          <p className={resumo.nivelamento.aprovado ? 'conquista' : 'aviso'}>
-            {resumo.nivelamento.aprovado
-              ? `Prova aprovada: você pulou para o ${NOMES_ESTAGIO[resumo.nivelamento.estagio]}`
-              : `Prova não aprovada. Para pular, acerte 85% em pelo menos ${PARAMETROS.nivelamento.tentativasMinimas} perguntas. Nova prova em ${PARAMETROS.nivelamento.diasEntreProvas} dias.`}
-          </p>
         )}
         {subiuDeNivel && (
           <p className="conquista">

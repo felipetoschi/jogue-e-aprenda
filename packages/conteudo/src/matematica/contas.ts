@@ -9,7 +9,8 @@ export type TipoErro =
   | 'digitos-invertidos'
   | 'sem-reserva'
   | 'ordem-operacoes'
-  | 'sinal-trocado';
+  | 'sinal-trocado'
+  | 'parcela-esquecida';
 
 export interface Opcao {
   valor: number;
@@ -236,8 +237,13 @@ function divisao(estagio: Estagio, ajuste: number, rng: Rng): ContaBruta {
 
 function expressoes(estagio: Estagio, ajuste: number, rng: Rng): ContaBruta {
   switch (estagio) {
-    // Expressões não tem Básico: começa no Intermediário.
-    case 'basico':
+    case 'basico': {
+      const a = naFaixa(1, 8, ajuste, rng);
+      const b = inteiro(1, 6, rng);
+      const c = inteiro(1, 6, rng);
+      const candidatos: Candidato[] = [{ valor: a + b, tipo: 'parcela-esquecida' }];
+      return { texto: `${a} + ${b} + ${c}`, resposta: a + b + c, candidatos };
+    }
     case 'intermediario': {
       const a = naFaixa(6, 20, ajuste, rng);
       const b = inteiro(1, a - 1, rng);
@@ -338,6 +344,7 @@ const ROTULOS_ERRO: Record<TipoErro, string> = {
   'sem-reserva': 'Esqueceu o "vai um" ou o empréstimo',
   'ordem-operacoes': 'Ordem das operações',
   'sinal-trocado': 'Sinal trocado',
+  'parcela-esquecida': 'Esqueceu uma parcela',
 };
 
 /** Explica, numa frase, o erro que a opção escolhida imita. */
@@ -352,6 +359,7 @@ export function explicarErro(conta: Conta, valor: number, tipo: TipoErro): { rot
     'sem-reserva': `${v} é o que dá esquecendo o "vai um" ou o empréstimo entre as casas. ${certa}.`,
     'ordem-operacoes': `${v} é o que dá resolvendo da esquerda para a direita. Parênteses vêm primeiro, depois × e ÷, depois + e −. ${certa}.`,
     'sinal-trocado': `${v} está com o sinal trocado: o número maior está sendo subtraído. ${certa}.`,
+    'parcela-esquecida': `${v} é o que dá somando só as duas primeiras parcelas. ${certa}.`,
   };
   return { rotulo: ROTULOS_ERRO[tipo], explicacao: explicacoes[tipo] };
 }

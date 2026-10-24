@@ -1,7 +1,7 @@
 import type { DefinicaoHabilidade, EstadoHabilidade, PerfilProgresso } from './tipos';
 
 export function perfilNovo(): PerfilProgresso {
-  return { versao: 1, xp: 0, habilidades: {}, ultimoDia: null, partidasDoDia: {}, selos: {}, provas: {} };
+  return { versao: 1, xp: 0, habilidades: {}, ultimoDia: null, partidasDoDia: {}, selos: {} };
 }
 
 export function estadoInicial(def: DefinicaoHabilidade): EstadoHabilidade {

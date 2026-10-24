@@ -53,12 +53,8 @@ class Partida {
     this.estado = this.novoEstado();
     const { modo, rotulo } = conexao.config;
     const meta = this.estado.meta;
-    const sufixo = modo === 'nivelamento' ? ' · Prova' : modo === 'revisao' ? ' · Revisão' : '';
-    el('rotulo').textContent = `${rotulo}${sufixo}`;
-    el('preparo-detalhe').textContent =
-      modo === 'nivelamento'
-        ? `Prova de ${rotulo}: acerte pelo menos 85% em 10 perguntas ou mais para pular de nível.`
-        : `${rotulo}. Acerte ${meta} perguntas para vencer.`;
+    el('rotulo').textContent = `${rotulo}${modo === 'revisao' ? ' · Revisão' : ''}`;
+    el('preparo-detalhe').textContent = `${rotulo}. Acerte ${meta} perguntas para vencer.`;
     this.atualizarBotaoSom();
 
     el('botao-comecar').addEventListener('click', () => {

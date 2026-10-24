@@ -23,8 +23,6 @@ export const PARAMETROS = {
     dominioCompleto: 90,
   },
   ajusteFino: { limiteQueda: 50, correcaoQueda: -0.15, limiteAlta: 90, correcaoAlta: 0.1 },
-  /** Prova para pular o estágio atual: nota mínima, tentativas mínimas e espera entre provas. */
-  nivelamento: { notaParaPular: 85, tentativasMinimas: 10, diasEntreProvas: 7 },
   revisao: { intervalosDias: [3, 7, 14, 30, 60], notaAprovacao: 70, notaRuim: 50, ruinsParaEnferrujar: 2 },
 } as const;
 

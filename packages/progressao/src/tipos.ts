@@ -46,6 +46,4 @@ export interface PerfilProgresso {
   partidasDoDia: Record<string, number>;
   /** Maior selo já conquistado por matéria. Nunca é perdido. */
   selos: Record<string, Selo>;
-  /** Data da última prova de nivelamento por "habilidade:estágio". Opcional em perfis antigos. */
-  provas?: Record<string, string>;
 }

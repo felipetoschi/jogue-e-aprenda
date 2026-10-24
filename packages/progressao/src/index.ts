@@ -20,10 +20,8 @@ export {
   aplicarResultado,
   configParaPartida,
   estagiosLiberados,
-  situacaoProva,
   type ResumoPartida,
   type MudancaHabilidade,
   type ConfigSemId,
-  type SituacaoProva,
 } from './processar';
 export { sugerirProximaPartida } from './sugestao';
