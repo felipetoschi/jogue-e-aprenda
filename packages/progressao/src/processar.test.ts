@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { perfilNovo } from './perfil';
-import { aplicarResultado, configParaPartida, situacaoProva } from './processar';
+import { aplicarResultado, configParaPartida, estagiosLiberados, situacaoProva } from './processar';
 import { sugerirProximaPartida } from './sugestao';
 import { config, HABILIDADES, resultado } from './teste-util';
 import type { PerfilProgresso } from './tipos';
@@ -132,5 +132,37 @@ describe('prova de nivelamento', () => {
 
   it('monta a prova no estágio seguinte ao atual', () => {
     expect(configParaPartida(perfilNovo(), HABILIDADES[0]!, 'nivelamento')).toMatchObject({ estagio: 'intermediario', modo: 'nivelamento' });
+  });
+});
+
+describe('voltar a um estágio anterior', () => {
+  const noIntermediario = () => {
+    const perfil = perfilNovo();
+    perfil.habilidades.adicao = {
+      estagio: 'intermediario',
+      maestria: 40,
+      partidasNoEstagio: 2,
+      ultimosDesempenhos: [],
+      revisao: null,
+      revisoesRuinsSeguidas: 0,
+      enferrujada: false,
+    };
+    return perfil;
+  };
+
+  it('libera do estágio inicial até o atual', () => {
+    expect(estagiosLiberados(noIntermediario(), HABILIDADES[0]!)).toEqual(['basico', 'intermediario']);
+    expect(estagiosLiberados(perfilNovo(), HABILIDADES[0]!)).toEqual(['basico']);
+  });
+
+  it('monta a partida no estágio escolhido, mas nunca acima do atual', () => {
+    expect(configParaPartida(noIntermediario(), HABILIDADES[0]!, 'normal', 'basico')).toMatchObject({ estagio: 'basico', modo: 'normal' });
+    expect(configParaPartida(noIntermediario(), HABILIDADES[0]!, 'normal', 'mestre').estagio).toBe('intermediario');
+  });
+
+  it('dá XP sem mexer na maestria do estágio atual', () => {
+    const { perfil, resumo } = aplicarResultado(noIntermediario(), config({ estagio: 'basico' }), resultado(20, 20), HABILIDADES, agora);
+    expect(resumo.xpGanho).toBeGreaterThan(0);
+    expect(perfil.habilidades.adicao).toMatchObject({ estagio: 'intermediario', maestria: 40, partidasNoEstagio: 2 });
   });
 });

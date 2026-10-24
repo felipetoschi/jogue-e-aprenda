@@ -17,6 +17,9 @@ export function Resultado() {
   if (!estado) return <Navigate to="/" replace />;
   const { resumo, resultado, config } = estado;
   const subiuDeNivel = resumo.nivelDepois.nivel > resumo.nivelAntes.nivel;
+  // Escolheu jogar abaixo do estágio atual: "Jogar de novo" mantém a escolha. Depois de uma promoção, vai para o novo estágio.
+  const mudanca = resumo.habilidades[0];
+  const jogouEstagioAnterior = config.modo === 'normal' && !!mudanca && !mudanca.promovido && config.estagio !== mudanca.estagioDepois;
   const acertos = resultado.desempenho.reduce((t, d) => t + d.acertos, 0);
   const tentativas = resultado.desempenho.reduce((t, d) => t + d.tentativas, 0);
 
@@ -63,7 +66,11 @@ export function Resultado() {
         return (
           <section key={m.habilidadeId} className="cartao">
             <h2>{h?.nome}</h2>
-            {m.promovido ? (
+            {jogouEstagioAnterior ? (
+              <p className="suave">
+                Partida no {NOMES_ESTAGIO[config.estagio]}: vale XP, sua maestria no {NOMES_ESTAGIO[m.estagioDepois]} não muda.
+              </p>
+            ) : m.promovido ? (
               <p className="conquista">
                 Subiu de estágio: {NOMES_ESTAGIO[m.estagioAntes]} → {NOMES_ESTAGIO[m.estagioDepois]}
               </p>
@@ -95,7 +102,10 @@ export function Resultado() {
       )}
 
       <div className="acoes">
-        <Link className="botao" to={linkParaJogar(config.habilidadeId) ?? '/jogos'}>
+        <Link
+          className="botao"
+          to={linkParaJogar(config.habilidadeId, 'normal', jogouEstagioAnterior ? config.estagio : undefined) ?? '/jogos'}
+        >
           Jogar de novo
         </Link>
         <Link className="botao secundario" to="/mapa">

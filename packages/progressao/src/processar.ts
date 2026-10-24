@@ -1,4 +1,4 @@
-import type { ConfigPartida, Estagio, ResultadoJogo } from '@jogue/sdk-jogo';
+import { ESTAGIOS, type ConfigPartida, type Estagio, type ResultadoJogo } from '@jogue/sdk-jogo';
 import { ajusteFino } from './ajuste';
 import { estaDesbloqueada, melhorSelo, progressoMateria, seloPorProgresso } from './desbloqueio';
 import { calcularEstrelas } from './estrelas';
@@ -9,7 +9,7 @@ import { calcularXp } from './xp';
 import { estadoDe } from './perfil';
 import { agendarPrimeiraRevisao, aplicarRevisao } from './revisao';
 import type { DefinicaoHabilidade, PerfilProgresso, Selo } from './tipos';
-import { diaDe, proximoEstagio, somarDias } from './util';
+import { diaDe, indiceEstagio, proximoEstagio, somarDias } from './util';
 
 export interface MudancaHabilidade {
   habilidadeId: string;
@@ -202,9 +202,26 @@ export function aplicarResultado(
 
 export type ConfigSemId = Omit<ConfigPartida, 'partidaId'>;
 
-/** Monta a configuração da próxima partida de uma habilidade. */
-export function configParaPartida(perfil: PerfilProgresso, def: DefinicaoHabilidade, modo: ConfigPartida['modo'] = 'normal'): ConfigSemId {
+/** Estágios que o jogador pode escolher jogar: do inicial até o atual. */
+export function estagiosLiberados(perfil: PerfilProgresso, def: DefinicaoHabilidade): Estagio[] {
+  const atual = indiceEstagio(estadoDe(perfil, def).estagio);
+  return ESTAGIOS.filter((_, i) => i >= indiceEstagio(def.estagioInicial) && i <= atual);
+}
+
+/**
+ * Monta a configuração da próxima partida de uma habilidade.
+ * Com `estagioEscolhido` abaixo do atual, a partida vale XP, mas não mexe na maestria do estágio atual.
+ */
+export function configParaPartida(
+  perfil: PerfilProgresso,
+  def: DefinicaoHabilidade,
+  modo: ConfigPartida['modo'] = 'normal',
+  estagioEscolhido?: Estagio,
+): ConfigSemId {
   const estado = estadoDe(perfil, def);
+  if (modo === 'normal' && estagioEscolhido && estagioEscolhido !== estado.estagio && estagiosLiberados(perfil, def).includes(estagioEscolhido)) {
+    return { habilidadeId: def.id, estagio: estagioEscolhido, ajuste: 0.5, modo };
+  }
   if (modo === 'revisao' && estado.revisao) {
     return { habilidadeId: def.id, estagio: estado.revisao.estagio, ajuste: 0.5, modo };
   }

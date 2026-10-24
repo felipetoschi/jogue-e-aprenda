@@ -1,5 +1,5 @@
 import { configParaPartida, estadoDe, estaDesbloqueada, situacaoProva, type ResumoPartida } from '@jogue/progressao';
-import { abrirCanalComJogo, type ConfigPartida, type ModoPartida, type ResultadoJogo } from '@jogue/sdk-jogo';
+import { abrirCanalComJogo, ESTAGIOS, type ConfigPartida, type Estagio, type ModoPartida, type ResultadoJogo } from '@jogue/sdk-jogo';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { SeloEstagio } from '../componentes/ui';
@@ -23,6 +23,8 @@ export function Jogar() {
   const jogo = jogoPorId(jogoId);
   const habilidadeId = busca.get('habilidade');
   const modo = (busca.get('modo') as ModoPartida | null) ?? 'normal';
+  const estagioPedido = busca.get('estagio');
+  const estagio = (ESTAGIOS as readonly string[]).includes(estagioPedido ?? '') ? (estagioPedido as Estagio) : undefined;
 
   if (!jogo) {
     return (
@@ -77,7 +79,14 @@ export function Jogar() {
     );
   }
 
-  return <TelaPartida key={`${def.id}-${modo}`} jogoId={jogo.id} url={jogo.url} config={{ ...configParaPartida(perfil, def, modo), partidaId: novoId() }} />;
+  return (
+    <TelaPartida
+      key={`${def.id}-${modo}-${estagio ?? ''}`}
+      jogoId={jogo.id}
+      url={jogo.url}
+      config={{ ...configParaPartida(perfil, def, modo, estagio), partidaId: novoId() }}
+    />
+  );
 }
 
 /** O jogo roda isolado num iframe e só é baixado agora, ao abrir a partida. */

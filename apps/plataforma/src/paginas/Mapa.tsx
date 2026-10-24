@@ -1,4 +1,12 @@
-import { estadoDe, PARAMETROS, prerequisitosPendentes, progressoMateria, revisaoVencida, situacaoProva } from '@jogue/progressao';
+import {
+  estadoDe,
+  estagiosLiberados,
+  PARAMETROS,
+  prerequisitosPendentes,
+  progressoMateria,
+  revisaoVencida,
+  situacaoProva,
+} from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
@@ -33,6 +41,7 @@ export function Mapa() {
                 const link = linkParaJogar(h.id);
                 const prova = situacaoProva(perfil, h, agora);
                 const linkProva = prova?.disponivel ? linkParaJogar(h.id, 'nivelamento') : null;
+                const anteriores = estagiosLiberados(perfil, h).filter((e) => e !== estado.estagio);
                 return (
                   <article key={h.id} className={bloqueada ? 'cartao habilidade bloqueada' : 'cartao habilidade'}>
                     <div className="linha-titulo">
@@ -71,6 +80,17 @@ export function Mapa() {
                             </Link>
                           )}
                         </div>
+                        {anteriores.length > 0 && (
+                          <p className="suave">
+                            Voltar ao{' '}
+                            {anteriores.map((e, i) => (
+                              <span key={e}>
+                                {i > 0 && ', '}
+                                <Link to={linkParaJogar(h.id, 'normal', e) ?? '/jogos'}>{NOMES_ESTAGIO[e]}</Link>
+                              </span>
+                            ))}
+                          </p>
+                        )}
                         {prova?.liberaEm && (
                           <p className="suave">Nova prova em {formatoDia.format(new Date(prova.liberaEm))}</p>
                         )}

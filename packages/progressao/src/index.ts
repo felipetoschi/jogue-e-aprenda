@@ -19,6 +19,7 @@ export { revisaoVencida, aplicarRevisao } from './revisao';
 export {
   aplicarResultado,
   configParaPartida,
+  estagiosLiberados,
   situacaoProva,
   type ResumoPartida,
   type MudancaHabilidade,
