@@ -1,0 +1,24 @@
+{
+  "name": "jogue-e-aprenda",
+  "private": true,
+  "type": "module",
+  "description": "Plataforma de jogos educativos com progressão do básico ao avançado.",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "jogos/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n plataforma,cobrinha -c cyan,green \"npm run dev -w @jogue/plataforma\" \"npm run dev -w @jogue/jogo-cobrinha-que-calcula\"",
+    "build": "npm run build --workspaces --if-present && node scripts/montar-dist.mjs",
+    "preview": "vite preview --outDir dist --port 4173",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

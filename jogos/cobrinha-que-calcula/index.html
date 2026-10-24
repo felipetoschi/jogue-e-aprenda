@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Cobrinha que Calcula</title>
+  </head>
+  <body>
+    <main class="jogo">
+      <header class="hud">
+        <div class="hud-linha">
+          <span id="rotulo" class="rotulo"></span>
+          <span id="pontos" class="pontos" aria-live="polite">0/20</span>
+        </div>
+        <div id="conta" class="conta" aria-live="polite">&nbsp;</div>
+        <div class="energia" role="progressbar" aria-label="Energia" aria-valuemin="0" aria-valuemax="100">
+          <div id="energia" class="energia-barra"></div>
+        </div>
+      </header>
+
+      <div class="tabuleiro-area">
+        <canvas id="tabuleiro" class="tabuleiro" aria-label="Tabuleiro"></canvas>
+
+        <section id="tela-preparo" class="sobreposicao">
+          <h1>Cobrinha que Calcula</h1>
+          <p id="preparo-detalhe" class="detalhe"></p>
+          <ul class="instrucoes">
+            <li>Coma o resultado certo da conta.</li>
+            <li>Errou, bateu na borda, no corpo ou ficou sem energia: fim de jogo.</li>
+            <li class="so-teclado">Setas ou W A S D para virar, Espaço para pausar.</li>
+            <li class="so-toque">Use o joystick embaixo da tela.</li>
+          </ul>
+          <button id="botao-comecar" class="botao" type="button">Começar</button>
+          <div id="contagem" class="contagem" hidden></div>
+        </section>
+
+        <section id="tela-pausa" class="sobreposicao" hidden>
+          <h2>Pausado</h2>
+          <button id="botao-continuar" class="botao" type="button">Continuar</button>
+          <button id="botao-sair" class="botao secundario" type="button">Sair da partida</button>
+        </section>
+
+        <section id="tela-fim" class="sobreposicao" hidden>
+          <h2 id="fim-titulo"></h2>
+          <p id="fim-conta" class="conta-resolvida"></p>
+          <p id="fim-pontos" class="detalhe"></p>
+          <button id="botao-de-novo" class="botao" type="button" hidden>Jogar de novo</button>
+        </section>
+      </div>
+
+      <div class="controles">
+        <button id="botao-pausa" class="botao-pausa" type="button" aria-label="Pausar">II</button>
+        <div id="joystick" class="joystick" aria-hidden="true">
+          <div id="joystick-pino" class="joystick-pino"></div>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

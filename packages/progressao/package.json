@@ -1,0 +1,17 @@
+{
+  "name": "@jogue/progressao",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Regras de progressão: estrelas, XP, nível, maestria, estágios, revisão e desbloqueios.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@jogue/sdk-jogo": "*"
+  }
+}

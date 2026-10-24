@@ -1,0 +1,29 @@
+{
+  "name": "@jogue/plataforma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Site principal: início, mapa de habilidades, catálogo, partida, resultado e perfil.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@jogue/jogo-cobrinha-que-calcula": "*",
+    "@jogue/progressao": "*",
+    "@jogue/sdk-jogo": "*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^7.18.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^29.1.1"
+  }
+}

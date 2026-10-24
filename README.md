@@ -1,0 +1,45 @@
+# Jogue e Aprenda
+
+Plataforma de jogos de puzzle e tabuleiro que ensinam matemática, português, geografia e mais, para jovens e adultos. Cada partida alimenta um sistema de progressão do básico ao avançado.
+
+Esta é a **Fase 1 (Fundação)**: a plataforma completa com um único jogo, a **Cobrinha que Calcula**.
+
+## Como rodar
+
+Requer Node.js 20 ou mais novo.
+
+```bash
+npm install
+npm run dev        # plataforma em http://localhost:5173 (o jogo sobe junto, na porta 5174)
+```
+
+Outros comandos:
+
+| Comando | O que faz |
+| --- | --- |
+| `npm test` | Testes de todos os pacotes |
+| `npm run typecheck` | Checagem de tipos de todos os pacotes |
+| `npm run build` | Gera o site final em `dist/` (plataforma + jogos) |
+| `npm run preview` | Serve o `dist/` em http://localhost:4173 |
+
+Para jogar a cobrinha sozinha, fora da plataforma: `npm run dev -w @jogue/jogo-cobrinha-que-calcula` e abra
+`http://localhost:5174/jogos/cobrinha-que-calcula/?habilidade=divisao&estagio=avancado`.
+
+## Estrutura
+
+```
+apps/plataforma         site principal (React): início, mapa, jogos, partida, resultado, perfil
+packages/sdk-jogo       contrato e canal de mensagens entre plataforma e jogos
+packages/progressao     regras de estrelas, XP, nível, maestria, estágios, revisão e desbloqueio
+jogos/cobrinha-que-calcula  o primeiro jogo, com build próprio (canvas, sem framework)
+scripts/montar-dist.mjs junta o build da plataforma e dos jogos em dist/
+docs/                   arquitetura e guia para criar jogos
+```
+
+Os jogos são apps separados. A plataforma só conhece o **manifesto** de cada jogo (nome, matéria, habilidades) e baixa o código do jogo apenas quando o jogador abre a partida, num `iframe`. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e [docs/COMO-CRIAR-UM-JOGO.md](docs/COMO-CRIAR-UM-JOGO.md).
+
+## Estado atual
+
+- Progresso salvo no navegador (`localStorage`). A camada `apps/plataforma/src/dados/armazenamento.ts` é a que muda quando houver servidor e contas.
+- Uma matéria (Matemática) com 5 habilidades e o jogo Cobrinha que Calcula.
+- Ainda não existem: contas de usuário, servidor, nivelamento, conquistas, sequência de dias e ranking.

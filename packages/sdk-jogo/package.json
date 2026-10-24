@@ -1,0 +1,14 @@
+{
+  "name": "@jogue/sdk-jogo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Contrato e canal de comunicação entre a plataforma e os jogos.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}

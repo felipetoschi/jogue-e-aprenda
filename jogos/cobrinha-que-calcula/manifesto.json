@@ -1,0 +1,10 @@
+{
+  "id": "cobrinha-que-calcula",
+  "nome": "Cobrinha que Calcula",
+  "descricao": "Guie a cobra até o resultado certo da conta antes que a energia acabe. Errou, bateu ou ficou sem energia, a partida acaba.",
+  "tipo": "arcade",
+  "materiaId": "matematica",
+  "habilidades": ["adicao", "subtracao", "multiplicacao", "divisao", "expressoes"],
+  "duracaoMinutos": [2, 4],
+  "url": "jogos/cobrinha-que-calcula/index.html"
+}

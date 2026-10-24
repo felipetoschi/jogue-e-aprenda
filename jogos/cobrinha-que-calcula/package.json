@@ -1,0 +1,19 @@
+{
+  "name": "@jogue/jogo-cobrinha-que-calcula",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Jogo da cobrinha em que a cobra precisa comer o resultado certo da conta.",
+  "exports": {
+    "./manifesto": "./manifesto.json"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@jogue/sdk-jogo": "*"
+  }
+}
