@@ -8,3 +8,12 @@ createRoot(document.getElementById('raiz')!).render(
     <App />
   </StrictMode>,
 );
+
+// App instalável: o service worker guarda os arquivos para abrir sem internet.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      // Sem service worker (navegador antigo, página isolada): o app funciona, só não abre offline.
+    });
+  });
+}

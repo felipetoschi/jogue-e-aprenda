@@ -843,6 +843,10 @@ td .estrelas {
   padding: 4px 0;
 }
 
+.tela-cheia {
+  margin-left: auto;
+}
+
 .partida-jogo {
   flex: 1;
   width: 100%;

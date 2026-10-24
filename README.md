@@ -4,6 +4,14 @@ Plataforma de jogos de puzzle e tabuleiro que ensinam matemática, português, g
 
 Esta é a **Fase 1 (Fundação)**: a plataforma completa com um único jogo, a **Cobrinha que Calcula**.
 
+## Jogar
+
+Versão publicada: **https://felipetoschi.github.io/jogue-e-aprenda/**
+
+No celular, instale o app para jogar em tela cheia: no Android, use o botão "Instalar o app" do início (ou o menu do navegador → "Instalar app"); no iPhone, toque em Compartilhar → "Adicionar à Tela de Início". Depois da primeira visita, o app abre mesmo sem internet.
+
+A publicação é automática: cada push na branch principal roda `.github/workflows/pages.yml`, que testa, gera o build e publica no GitHub Pages.
+
 ## Como rodar
 
 Requer Node.js 20 ou mais novo.

@@ -2,6 +2,7 @@ import { NOMES_ESTAGIO, ESTAGIOS } from '@jogue/sdk-jogo';
 import { PARAMETROS } from '@jogue/progressao';
 import { Link } from 'react-router';
 import { DemoCobrinha } from '../componentes/DemoCobrinha';
+import { InstalarApp } from '../componentes/InstalarApp';
 import { MATERIAS, materiaPorId } from '@jogue/conteudo';
 import { JOGOS } from '../conteudo/jogos';
 
@@ -25,6 +26,7 @@ export function Apresentacao() {
               Ver meu progresso
             </Link>
           </div>
+          <InstalarApp />
         </div>
         <DemoCobrinha />
       </section>

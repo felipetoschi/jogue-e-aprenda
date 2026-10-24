@@ -1,4 +1,4 @@
-import { configParaPartida, estaDesbloqueada, situacaoProva, sugerirProximaPartida, type ResumoPartida } from '@jogue/progressao';
+import { configParaPartida, estaDesbloqueada, sugerirProximaPartida, type ResumoPartida } from '@jogue/progressao';
 import { gerarQuestoes, HABILIDADES } from '@jogue/conteudo';
 import {
   abrirCanalComJogo,
@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { habilidadesDoJogo, jogoPorId } from '../conteudo/jogos';
+import { modoApp } from '../componentes/InstalarApp';
 import { useProgresso } from '../estado/progresso';
 
 export interface EstadoResultado {
@@ -41,10 +42,9 @@ export function Jogar() {
   const abertas = habilidades.filter((h) => estaDesbloqueada(perfil, h, HABILIDADES));
   const pedida = abertas.find((h) => h.id === busca.get('habilidade'));
   const def = pedida ?? abertas.find((h) => h.id === sugerirProximaPartida(perfil, abertas)?.habilidadeId) ?? abertas[0];
-  const provaIndisponivel = modo === 'nivelamento' && def && !situacaoProva(perfil, def)?.disponivel;
 
   const [config] = useState<ConfigPartida | null>(() => {
-    if (!jogo || !def || provaIndisponivel) return null;
+    if (!jogo || !def) return null;
     const base = configParaPartida(perfil, def, modo, ehEstagio(estagioPedido) ? estagioPedido : undefined);
     // As perguntas vêm do banco de conteúdo; o jogo só as mostra.
     const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, jogo.questoesPorPartida);
@@ -54,8 +54,7 @@ export function Jogar() {
   if (!jogo || !config) {
     return (
       <div className="pilha">
-        <h1>{!jogo ? 'Jogo não encontrado' : provaIndisponivel ? 'A prova não está disponível agora' : 'Habilidade bloqueada'}</h1>
-        {provaIndisponivel && <p className="suave">Cada prova pode ser feita uma vez por semana.</p>}
+        <h1>{!jogo ? 'Jogo não encontrado' : 'Habilidade bloqueada'}</h1>
         <Link to="/mapa">Ver o mapa</Link>
       </div>
     );
@@ -110,9 +109,29 @@ function TelaPartida({ jogoId, url, config: configInicial }: { jogoId: string; u
           ← Sair
         </button>
         {config.modo === 'revisao' && <span className="suave">Revisão</span>}
-        {config.modo === 'nivelamento' && <span className="suave">Prova de nivelamento</span>}
+        <BotaoTelaCheia />
       </div>
       <iframe ref={iframe} className="partida-jogo" src={url} title="Jogo" allow="fullscreen" />
     </div>
+  );
+}
+
+/** Tela cheia no navegador, onde o aparelho permite (no iPhone, só instalando o app). */
+function BotaoTelaCheia() {
+  const [cheia, setCheia] = useState(() => !!document.fullscreenElement);
+  useEffect(() => {
+    const aoMudar = () => setCheia(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', aoMudar);
+    return () => document.removeEventListener('fullscreenchange', aoMudar);
+  }, []);
+  if (!document.fullscreenEnabled || modoApp('fullscreen')) return null;
+  return (
+    <button
+      type="button"
+      className="link-botao tela-cheia"
+      onClick={() => (cheia ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {})}
+    >
+      {cheia ? 'Sair da tela cheia' : 'Tela cheia'}
+    </button>
   );
 }
