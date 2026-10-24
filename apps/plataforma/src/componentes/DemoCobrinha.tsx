@@ -195,7 +195,6 @@ export function DemoCobrinha() {
         {conta.texto} = <span className={conta.resposta === null ? 'demo-interrogacao' : 'demo-resposta'}>{conta.resposta ?? '?'}</span>
       </div>
       <canvas ref={canvas} className="demo-tabuleiro" />
-      <figcaption>Cobrinha que Calcula: coma o resultado certo antes que a energia acabe.</figcaption>
     </figure>
   );
 }
