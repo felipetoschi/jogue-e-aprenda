@@ -95,6 +95,18 @@ describe('jogo da cobrinha', () => {
     expect(e.cobra[0]).toEqual({ x: cabeca.x + 1, y: cabeca.y });
   });
 
+  it('começa devagar e acelera a cada acerto, até o teto do estágio', () => {
+    const e = novo();
+    expect(1 / e.segundosPorPasso).toBe(3);
+    porOpcaoNaFrente(e, true);
+    umPasso(e);
+    expect(1 / e.segundosPorPasso).toBeCloseTo(3.15);
+    e.acertos = 18;
+    porOpcaoNaFrente(e, true);
+    umPasso(e);
+    expect(1 / e.segundosPorPasso).toBe(5);
+  });
+
   it('não deixa dar meia-volta e guarda no máximo 2 viradas', () => {
     const e = novo();
     virar(e, 'esquerda');

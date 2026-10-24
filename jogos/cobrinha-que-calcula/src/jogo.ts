@@ -9,6 +9,7 @@ import {
   TAMANHO_INICIAL,
   TAMANHO_TABULEIRO,
   segundosPorConta,
+  velocidade,
 } from './regras';
 
 export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
@@ -88,7 +89,7 @@ export function criarJogo(config: ConfigJogo, rng: Rng): EstadoJogo {
     opcoes: [],
     energia: 1,
     segundosPorConta: segundosPorConta(config.estagio, config.ajuste),
-    segundosPorPasso: 1 / regras.casasPorSegundo,
+    segundosPorPasso: 1 / velocidade(config.estagio, 0),
     acumulado: 0,
     tempoNaConta: 0,
     temposDeAcerto: [],
@@ -166,6 +167,7 @@ function passo(estado: EstadoJogo, rng: Rng): Evento | null {
   estado.crescerPendente++;
   estado.maiorTamanho = Math.max(estado.maiorTamanho, estado.cobra.length + estado.crescerPendente);
   estado.temposDeAcerto.push(estado.tempoNaConta);
+  estado.segundosPorPasso = 1 / velocidade(estado.config.estagio, estado.acertos);
   if (estado.acertos >= META_CONTAS) return terminar(estado, 'vitoria', null);
 
   const { opcoes } = REGRAS_ESTAGIO[estado.config.estagio];

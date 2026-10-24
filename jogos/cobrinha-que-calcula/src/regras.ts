@@ -12,15 +12,27 @@ export const ALERTA_ENERGIA = 3;
 export interface RegrasEstagio {
   opcoes: number;
   segundosPorConta: number;
-  casasPorSegundo: number;
+  /** Velocidade no começo da partida, em casas por segundo. */
+  velocidadeInicial: number;
+  /** Teto de velocidade, alcançado aos poucos a cada acerto. */
+  velocidadeMaxima: number;
 }
 
+/** Quanto a cobra acelera a cada acerto, em casas por segundo. */
+export const ACELERACAO_POR_ACERTO = 0.15;
+
 export const REGRAS_ESTAGIO: Record<Estagio, RegrasEstagio> = {
-  basico: { opcoes: 3, segundosPorConta: 12, casasPorSegundo: 5 },
-  intermediario: { opcoes: 3, segundosPorConta: 10, casasPorSegundo: 6 },
-  avancado: { opcoes: 4, segundosPorConta: 9, casasPorSegundo: 7 },
-  mestre: { opcoes: 4, segundosPorConta: 8, casasPorSegundo: 8 },
+  basico: { opcoes: 3, segundosPorConta: 12, velocidadeInicial: 3, velocidadeMaxima: 5 },
+  intermediario: { opcoes: 3, segundosPorConta: 10, velocidadeInicial: 4, velocidadeMaxima: 6 },
+  avancado: { opcoes: 4, segundosPorConta: 9, velocidadeInicial: 5, velocidadeMaxima: 7 },
+  mestre: { opcoes: 4, segundosPorConta: 8, velocidadeInicial: 6, velocidadeMaxima: 8 },
 };
+
+/** Velocidade depois de um número de acertos: sobe devagar até o teto do estágio. */
+export function velocidade(estagio: Estagio, acertos: number): number {
+  const { velocidadeInicial, velocidadeMaxima } = REGRAS_ESTAGIO[estagio];
+  return Math.min(velocidadeMaxima, velocidadeInicial + acertos * ACELERACAO_POR_ACERTO);
+}
 
 /** O ajuste fino tira até 25% da energia por conta, sem mudar a velocidade. */
 export function segundosPorConta(estagio: Estagio, ajuste: number): number {
