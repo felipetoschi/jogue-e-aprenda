@@ -1,4 +1,3 @@
-import { formatarNumero } from './contas';
 import type { EstadoJogo, Posicao } from './jogo';
 import { ALERTA_ENERGIA, LADO_OPCAO, TAMANHO_TABULEIRO } from './regras';
 
@@ -83,11 +82,11 @@ export class Desenhista {
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = cores.texto;
-      ctx.fillText(formatarNumero(opcao.valor), x + tamanho / 2, y + tamanho / 2, tamanho - 4);
+      ctx.fillText(opcao.texto, x + tamanho / 2, y + tamanho / 2, tamanho - 4);
     }
 
     // A cobra enfraquece com a energia: perde opacidade e pisca nos últimos segundos.
-    const segundosRestantes = estado.energia * estado.segundosPorConta;
+    const segundosRestantes = estado.energia * estado.segundosPorQuestao;
     const piscando = segundosRestantes < ALERTA_ENERGIA && Math.floor(tempo * 6) % 2 === 0;
     ctx.globalAlpha = piscando ? 0.2 : 0.3 + 0.7 * estado.energia;
     estado.cobra.forEach((parte, i) => {

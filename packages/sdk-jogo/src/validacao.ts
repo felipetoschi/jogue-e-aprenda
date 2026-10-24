@@ -22,6 +22,8 @@ export function validarResultado(resultado: ResultadoJogo, config: ConfigPartida
         problemas.push(`desempenho inválido em ${d.habilidadeId}`);
       } else if (d.acertos > d.tentativas) {
         problemas.push(`mais acertos que tentativas em ${d.habilidadeId}`);
+      } else if (d.tentativas > config.questoes.length) {
+        problemas.push(`mais tentativas que perguntas enviadas em ${d.habilidadeId}`);
       }
     }
   }

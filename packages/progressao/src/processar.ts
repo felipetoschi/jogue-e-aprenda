@@ -1,4 +1,4 @@
-import { ESTAGIOS, type ConfigPartida, type Estagio, type ResultadoJogo } from '@jogue/sdk-jogo';
+import { ESTAGIOS, type ConfigBase, type Estagio, type ResultadoJogo } from '@jogue/sdk-jogo';
 import { ajusteFino } from './ajuste';
 import { estaDesbloqueada, melhorSelo, progressoMateria, seloPorProgresso } from './desbloqueio';
 import { calcularEstrelas } from './estrelas';
@@ -44,7 +44,7 @@ const MAX_HISTORICO_DESEMPENHO = 5;
  */
 export function aplicarResultado(
   perfilAtual: PerfilProgresso,
-  config: ConfigPartida,
+  config: ConfigBase,
   resultado: ResultadoJogo,
   habilidades: DefinicaoHabilidade[],
   agora: Date = new Date(),
@@ -200,7 +200,8 @@ export function aplicarResultado(
   };
 }
 
-export type ConfigSemId = Omit<ConfigPartida, 'partidaId'>;
+/** O que a progressão decide sobre a próxima partida; a plataforma completa com as perguntas. */
+export type ConfigSemId = ConfigBase;
 
 /** Estágios que o jogador pode escolher jogar: do inicial até o atual. */
 export function estagiosLiberados(perfil: PerfilProgresso, def: DefinicaoHabilidade): Estagio[] {
@@ -215,7 +216,7 @@ export function estagiosLiberados(perfil: PerfilProgresso, def: DefinicaoHabilid
 export function configParaPartida(
   perfil: PerfilProgresso,
   def: DefinicaoHabilidade,
-  modo: ConfigPartida['modo'] = 'normal',
+  modo: ConfigBase['modo'] = 'normal',
   estagioEscolhido?: Estagio,
 ): ConfigSemId {
   const estado = estadoDe(perfil, def);

@@ -2,7 +2,7 @@ import { infoNivel } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { useState } from 'react';
 import { Estrelas } from '../componentes/ui';
-import { habilidadePorId } from '../conteudo/habilidades';
+import { habilidadePorId } from '@jogue/conteudo';
 import type { RegistroPartida } from '../dados/armazenamento';
 import { useProgresso } from '../estado/progresso';
 

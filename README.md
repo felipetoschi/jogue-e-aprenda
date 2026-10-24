@@ -23,23 +23,28 @@ Outros comandos:
 | `npm run preview` | Serve o `dist/` em http://localhost:4173 |
 
 Para jogar a cobrinha sozinha, fora da plataforma: `npm run dev -w @jogue/jogo-cobrinha-que-calcula` e abra
-`http://localhost:5174/jogos/cobrinha-que-calcula/?habilidade=divisao&estagio=avancado`.
+`http://localhost:5174/jogos/cobrinha-que-calcula/?habilidade=divisao&estagio=avancado` (as perguntas vêm do banco de conteúdo).
 
 ## Estrutura
 
 ```
-apps/plataforma         site principal (React): início, mapa, jogos, partida, resultado, perfil
-packages/sdk-jogo       contrato e canal de mensagens entre plataforma e jogos
+apps/plataforma         site principal (React): início, mapa de progresso, jogos, partida, resultado, perfil
+packages/conteudo       todo o conteúdo de todos os jogos, separado por disciplina (habilidades e perguntas)
 packages/progressao     regras de estrelas, XP, nível, maestria, estágios, revisão e desbloqueio
+packages/sdk-jogo       contrato e canal de mensagens entre plataforma e jogos
 jogos/cobrinha-que-calcula  o primeiro jogo, com build próprio (canvas, sem framework)
 scripts/montar-dist.mjs junta o build da plataforma e dos jogos em dist/
 docs/                   arquitetura e guia para criar jogos
 ```
 
-Os jogos são apps separados. A plataforma só conhece o **manifesto** de cada jogo (nome, matéria, habilidades) e baixa o código do jogo apenas quando o jogador abre a partida, num `iframe`. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e [docs/COMO-CRIAR-UM-JOGO.md](docs/COMO-CRIAR-UM-JOGO.md).
+Três coisas ficam separadas:
+
+- **Conteúdo** (`packages/conteudo`): disciplinas, habilidades e perguntas, num lugar só.
+- **Progresso** (`packages/progressao`): o que o jogador sabe por habilidade, venha de qual jogo vier.
+- **Jogos** (`jogos/*`): apps separados, sem conteúdo próprio. A plataforma gera as perguntas e as envia ao jogo, que só mostra e confere. O código do jogo é baixado apenas quando o jogador abre a partida, num `iframe`. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e [docs/COMO-CRIAR-UM-JOGO.md](docs/COMO-CRIAR-UM-JOGO.md).
 
 ## Estado atual
 
 - Progresso salvo no navegador (`localStorage`). A camada `apps/plataforma/src/dados/armazenamento.ts` é a que muda quando houver servidor e contas.
-- Uma matéria (Matemática) com 5 habilidades e o jogo Cobrinha que Calcula.
+- Uma disciplina (Matemática) com 5 habilidades e o jogo Cobrinha que Calcula. Português e Geografia aparecem como "em breve".
 - Ainda não existem: contas de usuário, servidor, nivelamento, conquistas, sequência de dias e ranking.

@@ -2,7 +2,7 @@ import { NOMES_ESTAGIO, ESTAGIOS } from '@jogue/sdk-jogo';
 import { PARAMETROS } from '@jogue/progressao';
 import { Link } from 'react-router';
 import { DemoCobrinha } from '../componentes/DemoCobrinha';
-import { linkParaJogar } from '../componentes/links';
+import { MATERIAS, materiaPorId } from '@jogue/conteudo';
 import { JOGOS } from '../conteudo/jogos';
 
 const { promocao, partidasMinimas } = PARAMETROS.maestria;
@@ -16,13 +16,13 @@ export function Apresentacao() {
         <div className="heroi-texto">
           <p className="sobretitulo">Jogos que ensinam</p>
           <h1>Cada partida é um passo na sua evolução.</h1>
-          <p className="heroi-sub">Puzzles e tabuleiros de matemática, português e mais. Do básico ao avançado.</p>
+          <p className="heroi-sub">Puzzles e tabuleiros de matemática, português e mais. Seu progresso vale em todos os jogos.</p>
           <div className="acoes">
-            <Link className="botao grande" to={linkParaJogar('adicao') ?? '/jogos'}>
-              Jogar agora
+            <Link className="botao grande" to="/jogos">
+              Escolher um jogo
             </Link>
-            <Link className="botao grande secundario" to={linkParaJogar('multiplicacao', 'nivelamento') ?? '/mapa'}>
-              Já sei o básico
+            <Link className="botao grande secundario" to="/mapa">
+              Ver meu progresso
             </Link>
           </div>
         </div>
@@ -34,7 +34,7 @@ export function Apresentacao() {
         <ol className="passos">
           <li>
             <h3>Jogue</h3>
-            <p>Partidas de poucos minutos.</p>
+            <p>Escolha um jogo, a disciplina e o nível.</p>
           </li>
           <li>
             <h3>Acerte</h3>
@@ -78,27 +78,25 @@ export function Apresentacao() {
         <h2 id="jogos">Jogos</h2>
         <div className="vitrine">
           <article className="jogo-destaque">
-            <p className="sobretitulo">Matemática</p>
+            <p className="sobretitulo">{cobrinha.materias.map((m) => materiaPorId(m)?.nome).join(' · ')}</p>
             <h3>{cobrinha.nome}</h3>
-            <p>Coma o resultado certo antes que a energia acabe.</p>
-            <Link className="botao" to={`/jogar/${cobrinha.id}`}>
+            <p>Coma a resposta certa antes que a energia acabe.</p>
+            <Link className="botao" to="/jogos">
               Jogar
             </Link>
           </article>
-          <article className="jogo-em-breve">
-            <h3>Português</h3>
-            <p className="sobretitulo">Em breve</p>
-          </article>
-          <article className="jogo-em-breve">
-            <h3>Geografia</h3>
-            <p className="sobretitulo">Em breve</p>
-          </article>
+          {MATERIAS.filter((m) => !m.disponivel).map((m) => (
+            <article key={m.id} className="jogo-em-breve">
+              <h3>{m.nome}</h3>
+              <p className="sobretitulo">Em breve</p>
+            </article>
+          ))}
         </div>
       </section>
 
       <section className="chamada">
         <h2>Pronto para jogar?</h2>
-        <Link className="botao grande" to={linkParaJogar('adicao') ?? '/jogos'}>
+        <Link className="botao grande" to="/jogos">
           Começar agora
         </Link>
       </section>

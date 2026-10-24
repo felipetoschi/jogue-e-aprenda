@@ -1,16 +1,6 @@
-import type { Estagio } from '@jogue/sdk-jogo';
+import type { Estagio, OpcaoQuestao, Questao } from '@jogue/sdk-jogo';
 import { inteiro, type Rng } from './aleatorio';
-import { gerarConta, type Conta, type Opcao, type TipoErro } from './contas';
-import {
-  DISTANCIA_MINIMA_CABECA,
-  LADO_OPCAO,
-  META_CONTAS,
-  REGRAS_ESTAGIO,
-  TAMANHO_INICIAL,
-  TAMANHO_TABULEIRO,
-  segundosPorConta,
-  velocidade,
-} from './regras';
+import { DISTANCIA_MINIMA_CABECA, LADO_OPCAO, TAMANHO_INICIAL, TAMANHO_TABULEIRO, segundosPorQuestao, velocidade } from './regras';
 
 export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita';
 export interface Posicao {
@@ -18,7 +8,7 @@ export interface Posicao {
   y: number;
 }
 
-export interface OpcaoNoTabuleiro extends Opcao {
+export interface OpcaoNoTabuleiro extends OpcaoQuestao {
   /** Canto superior esquerdo do bloco de LADO_OPCAO × LADO_OPCAO casas. */
   pos: Posicao;
 }
@@ -27,17 +17,17 @@ export type MotivoFim = 'vitoria' | 'erro' | 'energia' | 'borda' | 'corpo';
 
 export interface Fim {
   motivo: MotivoFim;
-  /** Conta que estava na tela, para mostrar resolvida quando o jogador errou ou ficou sem energia. */
-  conta: Conta;
-  tipoErro: TipoErro | null;
-  /** Número que a cobra comeu, quando errou. */
-  valorEscolhido: number | null;
+  /** Pergunta que estava na tela, para mostrar resolvida quando o jogador errou ou ficou sem energia. */
+  questao: Questao;
+  /** Opção errada que a cobra comeu, com a explicação do erro. */
+  opcaoEscolhida: OpcaoQuestao | null;
 }
 
 export interface ConfigJogo {
-  habilidadeId: string;
   estagio: Estagio;
   ajuste: number;
+  /** As perguntas vêm da plataforma; o jogo não tem conteúdo próprio. */
+  questoes: Questao[];
 }
 
 export interface EstadoJogo {
@@ -50,14 +40,16 @@ export interface EstadoJogo {
   /** Até 2 viradas guardadas, para uma volta rápida em "U" não se perder. */
   fila: Direcao[];
   crescerPendente: number;
-  conta: Conta;
+  questao: Questao;
+  /** Acertos que vencem a partida: uma por pergunta recebida. */
+  meta: number;
   opcoes: OpcaoNoTabuleiro[];
-  /** Energia de 0 a 1; zera em segundosPorConta. */
+  /** Energia de 0 a 1; zera em segundosPorQuestao. */
   energia: number;
-  segundosPorConta: number;
+  segundosPorQuestao: number;
   segundosPorPasso: number;
   acumulado: number;
-  tempoNaConta: number;
+  tempoNaQuestao: number;
   temposDeAcerto: number[];
   acertos: number;
   tentativas: number;
@@ -77,7 +69,7 @@ const OPOSTA: Record<Direcao, Direcao> = { cima: 'baixo', baixo: 'cima', esquerd
 export function criarJogo(config: ConfigJogo, rng: Rng): EstadoJogo {
   const meio = Math.floor(TAMANHO_TABULEIRO / 2);
   const cobra = Array.from({ length: TAMANHO_INICIAL }, (_, i) => ({ x: meio - i, y: meio }));
-  const regras = REGRAS_ESTAGIO[config.estagio];
+  if (config.questoes.length === 0) throw new Error('A partida precisa de perguntas');
   const estado: EstadoJogo = {
     config,
     cobra,
@@ -85,20 +77,21 @@ export function criarJogo(config: ConfigJogo, rng: Rng): EstadoJogo {
     parada: true,
     fila: [],
     crescerPendente: 0,
-    conta: gerarConta(config.habilidadeId, config.estagio, config.ajuste, regras.opcoes, rng),
+    questao: config.questoes[0]!,
+    meta: config.questoes.length,
     opcoes: [],
     energia: 1,
-    segundosPorConta: segundosPorConta(config.estagio, config.ajuste),
+    segundosPorQuestao: segundosPorQuestao(config.estagio, config.ajuste),
     segundosPorPasso: 1 / velocidade(config.estagio, 0),
     acumulado: 0,
-    tempoNaConta: 0,
+    tempoNaQuestao: 0,
     temposDeAcerto: [],
     acertos: 0,
     tentativas: 0,
     maiorTamanho: cobra.length,
     fim: null,
   };
-  estado.opcoes = posicionarOpcoes(estado.conta.opcoes, cobra, rng);
+  estado.opcoes = posicionarOpcoes(estado.questao.opcoes, cobra, rng);
   return estado;
 }
 
@@ -120,15 +113,15 @@ export function avancar(estado: EstadoJogo, dt: number, rng: Rng): Evento[] {
   if (estado.fim) return [];
   const eventos: Evento[] = [];
 
-  estado.tempoNaConta += dt;
-  estado.energia -= dt / estado.segundosPorConta;
+  estado.tempoNaQuestao += dt;
+  estado.energia -= dt / estado.segundosPorQuestao;
   if (estado.energia <= 0) {
     estado.energia = 0;
     estado.tentativas++;
     return [terminar(estado, 'energia', null)];
   }
 
-  // Parada, a energia continua caindo: o tempo para pensar na primeira conta não é infinito.
+  // Parada, a energia continua caindo: o tempo para pensar na primeira pergunta não é infinito.
   if (estado.parada) return eventos;
   estado.acumulado += dt;
   while (estado.acumulado >= estado.segundosPorPasso && !estado.fim) {
@@ -161,25 +154,24 @@ function passo(estado: EstadoJogo, rng: Rng): Evento | null {
   if (!comida) return null;
 
   estado.tentativas++;
-  if (!comida.correta) return terminar(estado, 'erro', comida.tipoErro, comida.valor);
+  if (!comida.correta) return terminar(estado, 'erro', comida);
 
   estado.acertos++;
   estado.crescerPendente++;
   estado.maiorTamanho = Math.max(estado.maiorTamanho, estado.cobra.length + estado.crescerPendente);
-  estado.temposDeAcerto.push(estado.tempoNaConta);
+  estado.temposDeAcerto.push(estado.tempoNaQuestao);
   estado.segundosPorPasso = 1 / velocidade(estado.config.estagio, estado.acertos);
-  if (estado.acertos >= META_CONTAS) return terminar(estado, 'vitoria', null);
+  if (estado.acertos >= estado.meta) return terminar(estado, 'vitoria', null);
 
-  const { opcoes } = REGRAS_ESTAGIO[estado.config.estagio];
-  estado.conta = gerarConta(estado.config.habilidadeId, estado.config.estagio, estado.config.ajuste, opcoes, rng);
-  estado.opcoes = posicionarOpcoes(estado.conta.opcoes, estado.cobra, rng);
+  estado.questao = estado.config.questoes[estado.acertos]!;
+  estado.opcoes = posicionarOpcoes(estado.questao.opcoes, estado.cobra, rng);
   estado.energia = 1;
-  estado.tempoNaConta = 0;
+  estado.tempoNaQuestao = 0;
   return { tipo: 'acerto', pos: nova };
 }
 
-function terminar(estado: EstadoJogo, motivo: MotivoFim, tipoErro: TipoErro | null, valorEscolhido: number | null = null): Evento {
-  estado.fim = { motivo, conta: estado.conta, tipoErro, valorEscolhido };
+function terminar(estado: EstadoJogo, motivo: MotivoFim, opcaoEscolhida: OpcaoQuestao | null): Evento {
+  estado.fim = { motivo, questao: estado.questao, opcaoEscolhida };
   return { tipo: 'fim', fim: estado.fim };
 }
 
@@ -203,7 +195,7 @@ const blocosSeparados = (a: Posicao, b: Posicao) =>
  * Posiciona as opções longe da cabeça, separadas entre si e a distâncias parecidas da cabeça,
  * para a mais próxima não ser sempre a certa. Relaxa as exigências se não achar lugar.
  */
-export function posicionarOpcoes(opcoes: Opcao[], cobra: Posicao[], rng: Rng): OpcaoNoTabuleiro[] {
+export function posicionarOpcoes(opcoes: OpcaoQuestao[], cobra: Posicao[], rng: Rng): OpcaoNoTabuleiro[] {
   const cabeca = cobra[0]!;
   const livres: Posicao[] = [];
   for (let y = 0; y <= TAMANHO_TABULEIRO - LADO_OPCAO; y++) {
@@ -236,4 +228,4 @@ export function posicionarOpcoes(opcoes: Opcao[], cobra: Posicao[], rng: Rng): O
 }
 
 /** Pontuação de 0 a 100 enviada à plataforma. */
-export const pontuacaoDe = (estado: EstadoJogo) => Math.round((100 * estado.acertos) / META_CONTAS);
+export const pontuacaoDe = (estado: EstadoJogo) => Math.round((100 * estado.acertos) / estado.meta);

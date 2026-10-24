@@ -1,0 +1,18 @@
+{
+  "name": "@jogue/conteudo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Banco de conteúdo de todos os jogos: disciplinas, habilidades e geradores de perguntas.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@jogue/progressao": "*",
+    "@jogue/sdk-jogo": "*"
+  }
+}

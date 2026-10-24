@@ -1,5 +1,5 @@
 import type { Estagio } from '@jogue/sdk-jogo';
-import { embaralhar, inteiro, type Rng } from './aleatorio';
+import { embaralhar, inteiro, type Rng } from '../aleatorio';
 
 /** Erros comuns que as opções falsas imitam (plano, aba do jogo, "Respostas falsas"). */
 export type TipoErro =

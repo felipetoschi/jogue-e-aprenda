@@ -1,4 +1,4 @@
-import type { ConfigPartida, ResultadoJogo } from '@jogue/sdk-jogo';
+import type { ConfigBase, ResultadoJogo } from '@jogue/sdk-jogo';
 import type { DefinicaoHabilidade } from './tipos';
 
 export const HABILIDADES: DefinicaoHabilidade[] = [
@@ -12,8 +12,8 @@ export const HABILIDADES: DefinicaoHabilidade[] = [
   },
 ];
 
-export function config(parcial: Partial<ConfigPartida> = {}): ConfigPartida {
-  return { partidaId: 'p', habilidadeId: 'adicao', estagio: 'basico', ajuste: 0, modo: 'normal', ...parcial };
+export function config(parcial: Partial<ConfigBase> = {}): ConfigBase {
+  return { habilidadeId: 'adicao', estagio: 'basico', ajuste: 0, modo: 'normal', ...parcial };
 }
 
 export function resultado(acertos: number, tentativas: number, parcial: Partial<ResultadoJogo> = {}): ResultadoJogo {

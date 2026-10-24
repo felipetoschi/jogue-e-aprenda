@@ -1,15 +1,15 @@
 import { PARAMETROS, type ResumoPartida } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link, Navigate, useLocation } from 'react-router';
-import { linkParaJogar } from '../componentes/links';
+import { linkParaEscolher, linkParaJogar } from '../componentes/links';
 import { Barra, Estrelas, SeloMateria } from '../componentes/ui';
-import { habilidadePorId, materiaPorId } from '../conteudo/habilidades';
+import { habilidadePorId, materiaPorId } from '@jogue/conteudo';
 import type { EstadoResultado } from './Jogar';
 
 const AVISOS_NAO_CONTOU: Record<NonNullable<ResumoPartida['naoContou']>, string> = {
   abandono: 'Partida abandonada: não conta para a progressão.',
   treino: 'Partida de treino: não conta para a progressão.',
-  'sem-tentativas': 'Nenhuma conta respondida: a partida não conta para a progressão.',
+  'sem-tentativas': 'Nenhuma pergunta respondida: a partida não conta para a progressão.',
 };
 
 export function Resultado() {
@@ -46,7 +46,7 @@ export function Resultado() {
           <p className={resumo.nivelamento.aprovado ? 'conquista' : 'aviso'}>
             {resumo.nivelamento.aprovado
               ? `Prova aprovada: você pulou para o ${NOMES_ESTAGIO[resumo.nivelamento.estagio]}`
-              : `Prova não aprovada. Para pular, acerte 85% em pelo menos ${PARAMETROS.nivelamento.tentativasMinimas} contas. Nova prova em ${PARAMETROS.nivelamento.diasEntreProvas} dias.`}
+              : `Prova não aprovada. Para pular, acerte 85% em pelo menos ${PARAMETROS.nivelamento.tentativasMinimas} perguntas. Nova prova em ${PARAMETROS.nivelamento.diasEntreProvas} dias.`}
           </p>
         )}
         {subiuDeNivel && (
@@ -107,12 +107,13 @@ export function Resultado() {
           to={
             linkParaJogar(config.habilidadeId, 'normal', {
               estagio: jogouEstagioAnterior ? config.estagio : undefined,
+              jogoId: estado.jogoId,
             }) ?? '/jogos'
           }
         >
           Jogar de novo
         </Link>
-        <Link className="botao secundario" to="/mapa">
+        <Link className="botao secundario" to={linkParaEscolher(config.habilidadeId)}>
           Trocar nível
         </Link>
 

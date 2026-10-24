@@ -3,7 +3,7 @@ import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
 import { Barra } from '../componentes/ui';
-import { HABILIDADES, habilidadePorId } from '../conteudo/habilidades';
+import { HABILIDADES, habilidadePorId } from '@jogue/conteudo';
 import { useProgresso } from '../estado/progresso';
 import { Apresentacao } from './Apresentacao';
 

@@ -1,6 +1,6 @@
 import { ESTAGIOS } from '@jogue/sdk-jogo';
 import { describe, expect, it } from 'vitest';
-import { comSemente } from './aleatorio';
+import { comSemente } from '../aleatorio';
 import { formatarNumero, gerarConta, HABILIDADES_SUPORTADAS } from './contas';
 
 /** Avalia o texto da conta para conferir a resposta de forma independente. */

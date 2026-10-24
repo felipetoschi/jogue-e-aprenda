@@ -1,5 +1,5 @@
 /** Versão do protocolo de mensagens. Mude ao quebrar compatibilidade. */
-export const VERSAO_PROTOCOLO = 1;
+export const VERSAO_PROTOCOLO = 2;
 
 /** Marca todas as mensagens, para ignorar qualquer outra coisa que chegue via postMessage. */
 export const CANAL = 'jogue-e-aprenda';
@@ -17,14 +17,46 @@ export const NOMES_ESTAGIO: Record<Estagio, string> = {
 /** nivelamento = prova do próximo estágio, para quem já sabe pular o atual. */
 export type ModoPartida = 'normal' | 'revisao' | 'treino' | 'nivelamento';
 
-/** O que a plataforma entrega ao jogo ao iniciar uma partida. */
-export interface ConfigPartida {
-  partidaId: string;
+/**
+ * Formatos de pergunta. Cada jogo declara quais sabe mostrar; o conteúdo diz o formato de cada habilidade.
+ * resposta-curta: enunciado + opções curtas (um número, uma palavra, um nome).
+ */
+export type FormatoQuestao = 'resposta-curta';
+
+export interface OpcaoQuestao {
+  /** Texto exibido na opção, ex.: "56", "Lima", "pães". */
+  texto: string;
+  correta: boolean;
+  /** Nas opções erradas: que erro ela imita e a explicação para o jogador. */
+  erro?: { tipo: string; rotulo: string; explicacao: string };
+}
+
+/** Uma pergunta do banco de conteúdo, pronta para qualquer jogo mostrar. */
+export interface Questao {
+  habilidadeId: string;
+  /** O que aparece em destaque, ex.: "7 × 8 = ?". */
+  enunciado: string;
+  /** A pergunta resolvida, para mostrar depois de um erro, ex.: "7 × 8 = 56". */
+  resolucao: string;
+  opcoes: OpcaoQuestao[];
+}
+
+/** Parte da configuração que a progressão decide: o quê, em que estágio e com que dificuldade. */
+export interface ConfigBase {
   habilidadeId: string;
   estagio: Estagio;
   /** Dificuldade dentro do estágio, de 0 (mais fácil) a 1 (mais difícil). */
   ajuste: number;
   modo: ModoPartida;
+}
+
+/** O que a plataforma entrega ao jogo ao iniciar uma partida. */
+export interface ConfigPartida extends ConfigBase {
+  partidaId: string;
+  /** Nome da habilidade e do estágio para o jogo exibir, ex.: "Adição · Básico". */
+  rotulo: string;
+  /** As perguntas da partida, vindas do banco de conteúdo da plataforma. */
+  questoes: Questao[];
 }
 
 /** Um erro explicado, para a plataforma mostrar o que a pessoa confundiu. */
@@ -66,8 +98,12 @@ export interface ManifestoJogo {
   nome: string;
   descricao: string;
   tipo: 'puzzle' | 'tabuleiro' | 'arcade';
-  materiaId: string;
-  habilidades: string[];
+  /** Disciplinas que o jogo oferece. As habilidades vêm do banco de conteúdo. */
+  materias: string[];
+  /** Formatos de pergunta que o jogo sabe mostrar. */
+  formatos: FormatoQuestao[];
+  /** Quantas perguntas a plataforma envia por partida. */
+  questoesPorPartida: number;
   duracaoMinutos: [min: number, max: number];
   /** Caminho (relativo à plataforma) do build do jogo, carregado só quando o jogador abre o jogo. */
   url: string;

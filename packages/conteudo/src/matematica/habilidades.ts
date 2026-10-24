@@ -1,24 +1,12 @@
-import type { DefinicaoHabilidade } from '@jogue/progressao';
-import type { Estagio } from '@jogue/sdk-jogo';
-
-export interface Materia {
-  id: string;
-  nome: string;
-}
-
-export const MATERIAS: Materia[] = [{ id: 'matematica', nome: 'Matemática' }];
-
-export interface Habilidade extends DefinicaoHabilidade {
-  /** O que cada estágio cobra, para mostrar no mapa. */
-  estagios: Partial<Record<Estagio, string>>;
-}
+import type { Habilidade } from '../tipos';
 
 /** Árvore de habilidades de Matemática (plano, aba do jogo, "Habilidades e estágios"). */
-export const HABILIDADES: Habilidade[] = [
+export const HABILIDADES_MATEMATICA: Habilidade[] = [
   {
     id: 'adicao',
     nome: 'Adição',
     materiaId: 'matematica',
+    formato: 'resposta-curta',
     estagioInicial: 'basico',
     prerequisitos: [],
     estagios: {
@@ -32,6 +20,7 @@ export const HABILIDADES: Habilidade[] = [
     id: 'subtracao',
     nome: 'Subtração',
     materiaId: 'matematica',
+    formato: 'resposta-curta',
     estagioInicial: 'basico',
     prerequisitos: [{ habilidadeId: 'adicao', estagio: 'intermediario' }],
     estagios: {
@@ -45,6 +34,7 @@ export const HABILIDADES: Habilidade[] = [
     id: 'multiplicacao',
     nome: 'Multiplicação',
     materiaId: 'matematica',
+    formato: 'resposta-curta',
     estagioInicial: 'basico',
     prerequisitos: [],
     estagios: {
@@ -58,6 +48,7 @@ export const HABILIDADES: Habilidade[] = [
     id: 'divisao',
     nome: 'Divisão',
     materiaId: 'matematica',
+    formato: 'resposta-curta',
     estagioInicial: 'basico',
     prerequisitos: [{ habilidadeId: 'multiplicacao', estagio: 'intermediario' }],
     estagios: {
@@ -71,6 +62,7 @@ export const HABILIDADES: Habilidade[] = [
     id: 'expressoes',
     nome: 'Expressões',
     materiaId: 'matematica',
+    formato: 'resposta-curta',
     estagioInicial: 'intermediario',
     prerequisitos: [
       { habilidadeId: 'adicao', estagio: 'intermediario' },
@@ -85,6 +77,3 @@ export const HABILIDADES: Habilidade[] = [
     },
   },
 ];
-
-export const habilidadePorId = (id: string) => HABILIDADES.find((h) => h.id === id);
-export const materiaPorId = (id: string) => MATERIAS.find((m) => m.id === id);

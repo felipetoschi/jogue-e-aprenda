@@ -15,5 +15,8 @@
   },
   "dependencies": {
     "@jogue/sdk-jogo": "*"
+  },
+  "devDependencies": {
+    "@jogue/conteudo": "*"
   }
 }

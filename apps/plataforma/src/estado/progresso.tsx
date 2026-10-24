@@ -1,7 +1,7 @@
 import { aplicarResultado, perfilNovo, type PerfilProgresso, type ResumoPartida } from '@jogue/progressao';
 import type { ConfigPartida, ResultadoJogo } from '@jogue/sdk-jogo';
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
-import { HABILIDADES } from '../conteudo/habilidades';
+import { HABILIDADES } from '@jogue/conteudo';
 import {
   apagarTudo,
   carregarHistorico,

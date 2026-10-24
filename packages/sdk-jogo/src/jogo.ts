@@ -19,8 +19,11 @@ export interface ConexaoPlataforma {
 }
 
 export interface OpcoesConexao {
-  /** Config usada quando o jogo roda fora da plataforma. */
-  configAvulsa: Omit<ConfigPartida, 'partidaId'>;
+  /**
+   * Monta a config quando o jogo roda fora da plataforma (desenvolvimento).
+   * É uma função para o jogo só carregar o que precisa para isso quando estiver avulso.
+   */
+  configAvulsa: () => Promise<Omit<ConfigPartida, 'partidaId'>>;
   /** Origem esperada da plataforma. Por padrão, a mesma do jogo. */
   origemPlataforma?: string;
 }
@@ -31,12 +34,14 @@ export function conectarAPlataforma(opcoes: OpcoesConexao): Promise<ConexaoPlata
   const pai = window.parent !== window ? window.parent : null;
 
   if (!pai) {
-    const config: ConfigPartida = { ...opcoes.configAvulsa, partidaId: 'avulsa' };
-    return Promise.resolve({
-      config,
-      avulso: true,
-      enviarResultado: (r) => console.info('[jogo avulso] resultado', { ...r, partidaId: config.partidaId }),
-      sair: () => console.info('[jogo avulso] sair'),
+    return opcoes.configAvulsa().then((avulsa) => {
+      const config: ConfigPartida = { ...avulsa, partidaId: 'avulsa' };
+      return {
+        config,
+        avulso: true,
+        enviarResultado: (r) => console.info('[jogo avulso] resultado', { ...r, partidaId: config.partidaId }),
+        sair: () => console.info('[jogo avulso] sair'),
+      };
     });
   }
 

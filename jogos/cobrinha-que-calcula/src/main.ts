@@ -1,10 +1,9 @@
 import './estilo.css';
 import { ESTAGIOS, NOMES_ESTAGIO, conectarAPlataforma, type ConexaoPlataforma, type Estagio } from '@jogue/sdk-jogo';
-import { explicarErro, formatarNumero, HABILIDADES_SUPORTADAS } from './contas';
 import { Desenhista } from './desenho';
 import { ouvirDeslize, ouvirSetas, ouvirTeclado } from './entrada';
 import { avancar, criarJogo, pontuacaoDe, virar, type EstadoJogo, type Fim, type MotivoFim } from './jogo';
-import { ALERTA_ENERGIA, META_CONTAS, NOMES_HABILIDADE } from './regras';
+import { ALERTA_ENERGIA } from './regras';
 import { Retorno } from './retorno';
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -20,16 +19,24 @@ const TITULOS_FIM: Record<MotivoFim, string> = {
 /** Tempo da animação de fim antes de devolver o resultado à plataforma. */
 const ESPERA_FIM_MS = 3200;
 
-/** Fora da plataforma, a configuração vem da URL: ?habilidade=divisao&estagio=avancado&ajuste=0.5 */
-function configDaUrl() {
+/**
+ * Fora da plataforma (desenvolvimento), a configuração vem da URL — ?habilidade=divisao&estagio=avancado&ajuste=0.5 —
+ * e as perguntas são geradas do banco de conteúdo, carregado só neste caso.
+ */
+async function configDaUrl() {
+  const { gerarQuestoes, habilidadePorId } = await import('@jogue/conteudo');
   const busca = new URLSearchParams(window.location.search);
-  const habilidade = busca.get('habilidade') ?? 'multiplicacao';
-  const estagio = busca.get('estagio') ?? 'intermediario';
+  const habilidade = habilidadePorId(busca.get('habilidade') ?? '') ?? habilidadePorId('multiplicacao')!;
+  const pedido = busca.get('estagio');
+  const estagio: Estagio = (ESTAGIOS as readonly string[]).includes(pedido ?? '') ? (pedido as Estagio) : 'intermediario';
+  const ajuste = Math.min(1, Math.max(0, Number(busca.get('ajuste') ?? 0.5) || 0));
   return {
-    habilidadeId: HABILIDADES_SUPORTADAS.includes(habilidade) ? habilidade : 'multiplicacao',
-    estagio: (ESTAGIOS as readonly string[]).includes(estagio) ? (estagio as Estagio) : 'intermediario',
-    ajuste: Math.min(1, Math.max(0, Number(busca.get('ajuste') ?? 0.5) || 0)),
+    habilidadeId: habilidade.id,
+    estagio,
+    ajuste,
     modo: 'normal' as const,
+    rotulo: `${habilidade.nome} · ${NOMES_ESTAGIO[estagio]}`,
+    questoes: gerarQuestoes(habilidade.id, estagio, ajuste, 20),
   };
 }
 
@@ -44,14 +51,14 @@ class Partida {
 
   constructor(private readonly conexao: ConexaoPlataforma) {
     this.estado = this.novoEstado();
-    const { habilidadeId, estagio, modo } = conexao.config;
-    const nome = NOMES_HABILIDADE[habilidadeId] ?? habilidadeId;
+    const { modo, rotulo } = conexao.config;
+    const meta = this.estado.meta;
     const sufixo = modo === 'nivelamento' ? ' · Prova' : modo === 'revisao' ? ' · Revisão' : '';
-    el('rotulo').textContent = `${nome} · ${NOMES_ESTAGIO[estagio]}${sufixo}`;
+    el('rotulo').textContent = `${rotulo}${sufixo}`;
     el('preparo-detalhe').textContent =
       modo === 'nivelamento'
-        ? `Prova para pular para ${nome}, estágio ${NOMES_ESTAGIO[estagio]}: acerte pelo menos 85% em 10 contas ou mais.`
-        : `${nome}, estágio ${NOMES_ESTAGIO[estagio]}. Resolva ${META_CONTAS} contas para vencer.`;
+        ? `Prova de ${rotulo}: acerte pelo menos 85% em 10 perguntas ou mais para pular de nível.`
+        : `${rotulo}. Acerte ${meta} perguntas para vencer.`;
     this.atualizarBotaoSom();
 
     el('botao-comecar').addEventListener('click', () => {
@@ -80,8 +87,8 @@ class Partida {
   }
 
   private novoEstado() {
-    const { habilidadeId, estagio, ajuste } = this.conexao.config;
-    return criarJogo({ habilidadeId, estagio, ajuste }, Math.random);
+    const { estagio, ajuste, questoes } = this.conexao.config;
+    return criarJogo({ estagio, ajuste, questoes }, Math.random);
   }
 
   private contagem() {
@@ -137,12 +144,12 @@ class Partida {
 
   private atualizarHud() {
     const { estado } = this;
-    el('conta').textContent = estado.fim?.motivo === 'vitoria' ? '🎉' : `${estado.conta.texto} = ?`;
-    el('pontos').textContent = `${estado.acertos}/${META_CONTAS}`;
+    el('conta').textContent = estado.fim?.motivo === 'vitoria' ? '🎉' : estado.questao.enunciado;
+    el('pontos').textContent = `${estado.acertos}/${estado.meta}`;
     el('dica').hidden = !(this.fase === 'jogando' && estado.parada);
     const barra = el('energia');
     barra.style.transform = `scaleX(${estado.energia})`;
-    barra.classList.toggle('alerta', estado.energia * estado.segundosPorConta < ALERTA_ENERGIA);
+    barra.classList.toggle('alerta', estado.energia * estado.segundosPorQuestao < ALERTA_ENERGIA);
   }
 
   private piscarConta(tipo: 'acerto' | 'erro') {
@@ -170,32 +177,26 @@ class Partida {
       this.piscarConta('erro');
     }
 
-    const resolvida = `${fim.conta.texto} = ${formatarNumero(fim.conta.resposta)}`;
-    const erro =
-      fim.motivo === 'erro' && fim.tipoErro && fim.valorEscolhido !== null
-        ? explicarErro(fim.conta, fim.valorEscolhido, fim.tipoErro)
-        : null;
-    // Errou ou ficou sem energia: mostra a conta resolvida, que é o momento de aprender.
-    const detalhe = erro ? erro.explicacao : fim.motivo === 'energia' ? `A resposta era: ${resolvida}.` : undefined;
+    const { resolucao, habilidadeId } = fim.questao;
+    const erro = fim.motivo === 'erro' ? (fim.opcaoEscolhida?.erro ?? null) : null;
+    // Errou ou ficou sem energia: mostra a pergunta resolvida, que é o momento de aprender.
+    const detalhe = erro ? erro.explicacao : fim.motivo === 'energia' ? `A resposta era: ${resolucao}.` : undefined;
 
     el('fim-titulo').textContent = TITULOS_FIM[fim.motivo];
-    el('fim-conta').textContent = fim.motivo === 'erro' || fim.motivo === 'energia' ? resolvida : '';
+    el('fim-conta').textContent = fim.motivo === 'erro' || fim.motivo === 'energia' ? resolucao : '';
     el('fim-explicacao').textContent = erro?.explicacao ?? '';
-    el('fim-pontos').textContent = `${estado.acertos} de ${META_CONTAS} contas · maior tamanho ${estado.maiorTamanho}`;
+    el('fim-pontos').textContent = `${estado.acertos} de ${estado.meta} perguntas · maior tamanho ${estado.maiorTamanho}`;
     el('botao-de-novo').hidden = !this.conexao.avulso;
     el('tela-fim').hidden = false;
 
     const tempos = estado.temposDeAcerto;
     const resultado = {
       pontuacao: pontuacaoDe(estado),
-      desempenho: [{ habilidadeId: estado.config.habilidadeId, acertos: estado.acertos, tentativas: estado.tentativas }],
+      desempenho: [{ habilidadeId, acertos: estado.acertos, tentativas: estado.tentativas }],
       ajudas: 0,
       status: 'concluida' as const,
       mensagem: { titulo: TITULOS_FIM[fim.motivo], detalhe },
-      erros:
-        erro && fim.tipoErro
-          ? [{ habilidadeId: estado.config.habilidadeId, tipo: fim.tipoErro, rotulo: erro.rotulo, explicacao: erro.explicacao }]
-          : [],
+      erros: erro ? [{ habilidadeId, ...erro }] : [],
       extras: {
         motivoFim: fim.motivo,
         maiorTamanho: estado.maiorTamanho,
@@ -216,4 +217,4 @@ class Partida {
   }
 }
 
-conectarAPlataforma({ configAvulsa: configDaUrl() }).then((conexao) => new Partida(conexao));
+conectarAPlataforma({ configAvulsa: configDaUrl }).then((conexao) => new Partida(conexao));

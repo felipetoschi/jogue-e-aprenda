@@ -1,9 +1,17 @@
 import { configParaPartida, estaDesbloqueada, situacaoProva, sugerirProximaPartida, type ResumoPartida } from '@jogue/progressao';
-import { abrirCanalComJogo, ESTAGIOS, type ConfigPartida, type Estagio, type ModoPartida, type ResultadoJogo } from '@jogue/sdk-jogo';
+import { gerarQuestoes, HABILIDADES } from '@jogue/conteudo';
+import {
+  abrirCanalComJogo,
+  ESTAGIOS,
+  NOMES_ESTAGIO,
+  type ConfigPartida,
+  type Estagio,
+  type ModoPartida,
+  type ResultadoJogo,
+} from '@jogue/sdk-jogo';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
-import { HABILIDADES, habilidadePorId } from '../conteudo/habilidades';
-import { jogoPorId } from '../conteudo/jogos';
+import { habilidadesDoJogo, jogoPorId } from '../conteudo/jogos';
 import { useProgresso } from '../estado/progresso';
 
 export interface EstadoResultado {
@@ -29,17 +37,19 @@ export function Jogar() {
   const modo = (busca.get('modo') as ModoPartida | null) ?? 'normal';
   const estagioPedido = busca.get('estagio');
 
-  const habilidades = (jogo?.habilidades ?? []).map((id) => habilidadePorId(id)).filter((h) => h !== undefined);
+  const habilidades = jogo ? habilidadesDoJogo(jogo) : [];
   const abertas = habilidades.filter((h) => estaDesbloqueada(perfil, h, HABILIDADES));
   const pedida = abertas.find((h) => h.id === busca.get('habilidade'));
   const def = pedida ?? abertas.find((h) => h.id === sugerirProximaPartida(perfil, abertas)?.habilidadeId) ?? abertas[0];
   const provaIndisponivel = modo === 'nivelamento' && def && !situacaoProva(perfil, def)?.disponivel;
 
-  const [config] = useState<ConfigPartida | null>(() =>
-    def && !provaIndisponivel
-      ? { ...configParaPartida(perfil, def, modo, ehEstagio(estagioPedido) ? estagioPedido : undefined), partidaId: novoId() }
-      : null,
-  );
+  const [config] = useState<ConfigPartida | null>(() => {
+    if (!jogo || !def || provaIndisponivel) return null;
+    const base = configParaPartida(perfil, def, modo, ehEstagio(estagioPedido) ? estagioPedido : undefined);
+    // As perguntas vêm do banco de conteúdo; o jogo só as mostra.
+    const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, jogo.questoesPorPartida);
+    return { ...base, partidaId: novoId(), rotulo: `${def.nome} · ${NOMES_ESTAGIO[base.estagio]}`, questoes };
+  });
 
   if (!jogo || !config) {
     return (

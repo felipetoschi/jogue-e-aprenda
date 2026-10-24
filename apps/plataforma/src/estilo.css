@@ -964,3 +964,54 @@ td .estrelas {
 .cadeado {
   flex: none;
 }
+
+/* ---------- Escolha no cartão do jogo ---------- */
+
+.cartao-jogo {
+  gap: 18px;
+}
+
+.cartao-jogo .seletor-estagio {
+  max-width: 640px;
+}
+
+@media (min-width: 640px) {
+  .cartao-jogo .seletor-estagio {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.pilha-curta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotulo-grupo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+.opcoes-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.etiqueta-em-breve {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px dashed var(--linha);
+  background: var(--superficie-2);
+  color: var(--tinta-suave);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
