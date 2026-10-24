@@ -1,8 +1,10 @@
-import { infoNivel } from '@jogue/progressao';
-import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
+import { HABILIDADES, habilidadePorId, habilidadesDaMateria, MATERIAS, type Habilidade } from '@jogue/conteudo';
+import { estadoDe, infoNivel, prerequisitosPendentes, progressoMateria, revisaoVencida } from '@jogue/progressao';
+import { NOMES_ESTAGIO, PADRAO } from '@jogue/sdk-jogo';
 import { useState } from 'react';
-import { Estrelas } from '../componentes/ui';
-import { habilidadePorId } from '@jogue/conteudo';
+import { Link } from 'react-router';
+import { linkParaEscolher } from '../componentes/links';
+import { Barra, Estrelas, SeloEstagio, SeloMateria } from '../componentes/ui';
 import type { RegistroPartida } from '../dados/armazenamento';
 import { useProgresso } from '../estado/progresso';
 
@@ -31,16 +33,18 @@ function contarErros(historico: RegistroPartida[]): ErroComum[] {
 
 const formatoData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
-export function Perfil() {
+/** Todo o progresso do jogador num lugar só: nível, disciplinas, erros, histórico. */
+export function Progresso() {
   const { perfil, historico, apagarProgresso } = useProgresso();
   const nivel = infoNivel(perfil.xp);
   const concluidas = historico.filter((r) => r.resumo?.contou);
   const [confirmando, setConfirmando] = useState(false);
   const errosComuns = contarErros(historico);
+  const zeradas = historico.filter((r) => r.resumo?.zerou).length;
 
   return (
     <div className="pilha">
-      <h1>Perfil</h1>
+      <h1>Progresso</h1>
       <section className="cartao numeros">
         <div>
           <strong>{nivel.nivel}</strong>
@@ -54,7 +58,13 @@ export function Perfil() {
           <strong>{concluidas.length}</strong>
           <span>partidas</span>
         </div>
+        <div>
+          <strong>{zeradas}</strong>
+          <span>zeradas</span>
+        </div>
       </section>
+
+      <PorDisciplina />
 
       {errosComuns.length > 0 && (
         <section className="cartao">
@@ -132,5 +142,96 @@ export function Perfil() {
       )}
       <p className="suave">Nesta versão o progresso fica salvo só neste navegador.</p>
     </div>
+  );
+}
+
+/**
+ * Progresso por disciplina, sem ligação com um jogo:
+ * qualquer jogo que treine uma habilidade soma no mesmo lugar.
+ */
+function PorDisciplina() {
+  const { perfil } = useProgresso();
+  const agora = new Date();
+  const disponiveis = MATERIAS.filter((m) => m.disponivel);
+  const emBreve = MATERIAS.filter((m) => !m.disponivel);
+
+  return (
+    <>
+      {disponiveis.map((materia) => {
+        const habilidades = habilidadesDaMateria(materia.id);
+        const progresso = progressoMateria(perfil, habilidades);
+        return (
+          <section key={materia.id} className="pilha">
+            <div className="linha-titulo">
+              <h2>{materia.nome}</h2>
+              <SeloMateria selo={perfil.selos[materia.id]} />
+            </div>
+            <Barra valor={progresso * 100} maximo={100} rotulo={`Progresso em ${materia.nome}`} />
+            <p className="suave">{Math.round(progresso * 100)}% da disciplina dominada</p>
+            <div className="grade">
+              {habilidades.map((h) => (
+                <CartaoHabilidade key={h.id} habilidade={h} agora={agora} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+      {emBreve.length > 0 && (
+        <section className="pilha">
+          <h2>Em breve</h2>
+          <div className="opcoes-linha">
+            {emBreve.map((m) => (
+              <span key={m.id} className="etiqueta-em-breve">
+                {m.nome}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function CartaoHabilidade({ habilidade: h, agora }: { habilidade: Habilidade; agora: Date }) {
+  const { perfil } = useProgresso();
+  const estado = estadoDe(perfil, h);
+  const pendentes = prerequisitosPendentes(perfil, h, HABILIDADES);
+
+  if (pendentes.length > 0) {
+    return (
+      <article className="cartao habilidade bloqueada">
+        <div className="linha-titulo">
+          <h3>{h.nome}</h3>
+          <SeloEstagio estagio={estado.estagio} />
+        </div>
+        <p className="aviso">
+          Falta: {pendentes.map((p) => `${habilidadePorId(p.habilidadeId)?.nome ?? p.habilidadeId} — ${NOMES_ESTAGIO[p.estagio]}`).join(', ')}
+        </p>
+      </article>
+    );
+  }
+
+  return (
+    <article className="cartao habilidade">
+      <div className="linha-titulo">
+        <h3>{h.nome}</h3>
+        <SeloEstagio estagio={estado.estagio} />
+      </div>
+      <p className="suave">{h.estagios[estado.estagio]}</p>
+      <Barra valor={estado.maestria} maximo={100} rotulo={`Maestria em ${h.nome}`} />
+      <p className="suave">
+        Maestria {estado.maestria}
+        {estado.estagio === 'mestre'
+          ? ' · último estágio'
+          : ` · zere o ${NOMES_ESTAGIO[estado.estagio]} (${PADRAO.questoesPorPartida} de ${PADRAO.questoesPorPartida}) para subir`}
+      </p>
+      <div className="etiquetas">
+        {revisaoVencida(estado, agora) && <span className="etiqueta">Para revisar</span>}
+        {estado.enferrujada && <span className="etiqueta alerta">Enferrujada</span>}
+      </div>
+      <Link className="botao pequeno secundario" to={linkParaEscolher(h.id)}>
+        Treinar
+      </Link>
+    </article>
   );
 }

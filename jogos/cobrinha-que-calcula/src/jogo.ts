@@ -1,4 +1,4 @@
-import type { Estagio, OpcaoQuestao, Questao } from '@jogue/sdk-jogo';
+import { pontuacaoPadrao, type Estagio, type OpcaoQuestao, type Questao } from '@jogue/sdk-jogo';
 import { inteiro, type Rng } from './aleatorio';
 import { DISTANCIA_MINIMA_CABECA, LADO_OPCAO, TAMANHO_INICIAL, TAMANHO_TABULEIRO, segundosPorQuestao, velocidade } from './regras';
 
@@ -228,4 +228,5 @@ export function posicionarOpcoes(opcoes: OpcaoQuestao[], cobra: Posicao[], rng: 
 }
 
 /** Pontuação de 0 a 100 enviada à plataforma. */
-export const pontuacaoDe = (estado: EstadoJogo) => Math.round((100 * estado.acertos) / estado.meta);
+/** Pontuação do padrão dos jogos: acertos ÷ perguntas × 100. */
+export const pontuacaoDe = (estado: EstadoJogo) => pontuacaoPadrao(estado.acertos, estado.meta);

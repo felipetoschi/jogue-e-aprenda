@@ -1,4 +1,4 @@
-import { ESTAGIOS, type ConfigBase, type Estagio, type ResultadoJogo } from '@jogue/sdk-jogo';
+import { ESTAGIOS, zerou, type ConfigBase, type Estagio, type ResultadoJogo } from '@jogue/sdk-jogo';
 import { ajusteFino } from './ajuste';
 import { estaDesbloqueada, melhorSelo, progressoMateria, seloPorProgresso } from './desbloqueio';
 import { calcularEstrelas } from './estrelas';
@@ -24,6 +24,8 @@ export interface ResumoPartida {
   /** false para partidas que não mexem na progressão; o motivo fica em naoContou. */
   contou: boolean;
   naoContou?: 'abandono' | 'treino' | 'sem-tentativas';
+  /** Acertou todas as perguntas da partida no estágio atual. */
+  zerou: boolean;
   estrelas: 0 | 1 | 2 | 3;
   xpGanho: number;
   nivelAntes: InfoNivel;
@@ -59,6 +61,7 @@ export function aplicarResultado(
       perfil,
       resumo: {
         contou: false,
+        zerou: false,
         naoContou,
         estrelas: naoContou === 'treino' ? estrelas : 0,
         xpGanho: 0,
@@ -89,6 +92,7 @@ export function aplicarResultado(
     partidasAnterioresHoje,
   });
   let revisaoAprovada: boolean | null = null;
+  let zerouPartida = false;
   const mudancas: MudancaHabilidade[] = [];
 
   for (const d of resultado.desempenho) {
@@ -114,9 +118,10 @@ export function aplicarResultado(
         ultimosDesempenhos: [...antes.ultimosDesempenhos, Math.round(desempenho)].slice(-MAX_HISTORICO_DESEMPENHO),
       };
       maestriaMostrada = estado.maestria;
+      // Padrão dos jogos: sobe de estágio quem zera a partida no estágio atual (todas as perguntas certas).
       const proximo = proximoEstagio(estado.estagio);
-      const { promocao, partidasMinimas } = PARAMETROS.maestria;
-      if (proximo && estado.maestria >= promocao && estado.partidasNoEstagio >= partidasMinimas) {
+      if (zerou(d.acertos, d.tentativas)) zerouPartida = true;
+      if (proximo && zerou(d.acertos, d.tentativas)) {
         estado = {
           ...estado,
           estagio: proximo,
@@ -165,6 +170,7 @@ export function aplicarResultado(
     perfil,
     resumo: {
       contou: true,
+      zerou: zerouPartida,
       estrelas,
       xpGanho,
       nivelAntes,

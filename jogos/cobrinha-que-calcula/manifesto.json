@@ -6,7 +6,6 @@
   "tipo": "arcade",
   "materias": ["matematica"],
   "formatos": ["resposta-curta"],
-  "questoesPorPartida": 20,
   "duracaoMinutos": [2, 5],
   "url": "jogos/cobrinha-que-calcula/index.html"
 }

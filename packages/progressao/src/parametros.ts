@@ -17,8 +17,6 @@ export const PARAMETROS = {
   maestria: {
     alfa: 0.4,
     tentativasPesoCheio: 5,
-    promocao: 80,
-    partidasMinimas: 3,
     /** Domínio no Mestre que vale o 4º ponto de domínio. */
     dominioCompleto: 90,
   },

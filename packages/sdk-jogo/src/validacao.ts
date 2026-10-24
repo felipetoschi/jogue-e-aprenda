@@ -1,4 +1,5 @@
 import type { ConfigPartida, ResultadoJogo } from './contrato';
+import { pontuacaoPadrao } from './padrao';
 
 const inteiroNaoNegativo = (n: unknown): n is number => Number.isInteger(n) && (n as number) >= 0;
 
@@ -28,5 +29,10 @@ export function validarResultado(resultado: ResultadoJogo, config: ConfigPartida
     }
   }
   if (resultado.erros !== undefined && !Array.isArray(resultado.erros)) problemas.push('erros inválidos');
+  // Padrão dos jogos: a pontuação é sempre acertos ÷ perguntas × 100.
+  if (Array.isArray(resultado.desempenho) && resultado.status === 'concluida') {
+    const acertos = resultado.desempenho.reduce((total, d) => total + d.acertos, 0);
+    if (resultado.pontuacao !== pontuacaoPadrao(acertos, config.questoes.length)) problemas.push('pontuação fora do padrão');
+  }
   return problemas;
 }

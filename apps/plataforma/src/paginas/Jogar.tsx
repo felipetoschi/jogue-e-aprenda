@@ -4,6 +4,7 @@ import {
   abrirCanalComJogo,
   ESTAGIOS,
   NOMES_ESTAGIO,
+  PADRAO,
   type ConfigPartida,
   type Estagio,
   type ModoPartida,
@@ -47,7 +48,7 @@ export function Jogar() {
     if (!jogo || !def) return null;
     const base = configParaPartida(perfil, def, modo, ehEstagio(estagioPedido) ? estagioPedido : undefined);
     // As perguntas vêm do banco de conteúdo; o jogo só as mostra.
-    const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, jogo.questoesPorPartida);
+    const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, PADRAO.questoesPorPartida);
     return { ...base, partidaId: novoId(), rotulo: `${def.nome} · ${NOMES_ESTAGIO[base.estagio]}`, questoes };
   });
 
@@ -55,7 +56,7 @@ export function Jogar() {
     return (
       <div className="pilha">
         <h1>{!jogo ? 'Jogo não encontrado' : 'Habilidade bloqueada'}</h1>
-        <Link to="/mapa">Ver o mapa</Link>
+        <Link to="/progresso">Ver o progresso</Link>
       </div>
     );
   }

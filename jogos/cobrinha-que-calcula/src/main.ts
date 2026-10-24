@@ -1,5 +1,5 @@
 import './estilo.css';
-import { ESTAGIOS, NOMES_ESTAGIO, conectarAPlataforma, type ConexaoPlataforma, type Estagio } from '@jogue/sdk-jogo';
+import { ESTAGIOS, NOMES_ESTAGIO, PADRAO, conectarAPlataforma, type ConexaoPlataforma, type Estagio } from '@jogue/sdk-jogo';
 import { Desenhista } from './desenho';
 import { ouvirDeslize, ouvirSetas, ouvirTeclado } from './entrada';
 import { avancar, criarJogo, pontuacaoDe, virar, type EstadoJogo, type Fim, type MotivoFim } from './jogo';
@@ -9,7 +9,7 @@ import { Retorno } from './retorno';
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const TITULOS_FIM: Record<MotivoFim, string> = {
-  vitoria: 'Você venceu!',
+  vitoria: 'Zerou!',
   erro: 'Resposta errada',
   energia: 'A energia acabou',
   borda: 'Bateu na borda',
@@ -36,7 +36,7 @@ async function configDaUrl() {
     ajuste,
     modo: 'normal' as const,
     rotulo: `${habilidade.nome} · ${NOMES_ESTAGIO[estagio]}`,
-    questoes: gerarQuestoes(habilidade.id, estagio, ajuste, 20),
+    questoes: gerarQuestoes(habilidade.id, estagio, ajuste, PADRAO.questoesPorPartida),
   };
 }
 

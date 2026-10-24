@@ -104,8 +104,6 @@ export interface ManifestoJogo {
   materias: string[];
   /** Formatos de pergunta que o jogo sabe mostrar. */
   formatos: FormatoQuestao[];
-  /** Quantas perguntas a plataforma envia por partida. */
-  questoesPorPartida: number;
   duracaoMinutos: [min: number, max: number];
   /** Caminho (relativo à plataforma) do build do jogo, carregado só quando o jogador abre o jogo. */
   url: string;

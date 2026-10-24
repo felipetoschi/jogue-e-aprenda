@@ -28,7 +28,7 @@ describe('plataforma', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Cada partida é um passo na sua evolução.' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Escolher um jogo' })).toHaveAttribute('href', '#/jogos');
-    expect(screen.getByRole('link', { name: 'Ver meu progresso' })).toHaveAttribute('href', '#/mapa');
+    expect(screen.getByRole('link', { name: 'Ver meu progresso' })).toHaveAttribute('href', '#/progresso');
   });
 
   it('mostra o nível e o botão Continuar depois da primeira partida', () => {
@@ -41,14 +41,25 @@ describe('plataforma', () => {
     expect(screen.getByRole('link', { name: 'Continuar' })).toBeInTheDocument();
   });
 
-  it('mostra o progresso por disciplina, sem depender de um jogo', () => {
-    window.location.hash = '#/mapa';
+  it('reúne todo o progresso numa aba, por disciplina e sem depender de um jogo', () => {
+    window.location.hash = '#/progresso';
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Mapa de progresso' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Progresso' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Histórico' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Apagar progresso' })).toBeInTheDocument();
+    expect(screen.getAllByText('Maestria 0 · zere o Básico (20 de 20) para subir').length).toBeGreaterThan(0);
     expect(screen.getByText('0% da disciplina dominada')).toBeInTheDocument();
     expect(screen.getByText('Falta: Multiplicação — Intermediário')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Treinar' })[0]).toHaveAttribute('href', '#/jogos?habilidade=adicao');
     expect(screen.getByText('Português')).toBeInTheDocument();
+  });
+
+  it('leva os endereços antigos de Mapa e Perfil para Progresso', () => {
+    window.location.hash = '#/perfil';
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Progresso' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Perfil' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Mapa' })).toBeNull();
   });
 
   it('no jogo, marca o nível mais alto já alcançado e deixa escolher um anterior', () => {

@@ -32,36 +32,44 @@ describe('aplicarResultado', () => {
     expect(r.perfil).toEqual(perfilNovo());
   });
 
-  it('promove ao chegar a 80 com 3 partidas, agenda revisão e desbloqueia a dependente', () => {
-    let perfil = perfilNovo();
-    // No Básico, a primeira promoção leva Adição ao Intermediário, o pré-requisito de Subtração.
-    const resumos = [];
-    for (let i = 0; i < 4; i++) {
-      const r = jogar(perfil, 19, 20);
-      perfil = r.perfil;
-      resumos.push(r.resumo);
-    }
-    const promocao = resumos.find((r) => r.habilidades[0]?.promovido);
-    expect(promocao).toBeDefined();
-    expect(promocao!.habilidades[0]).toMatchObject({ estagioAntes: 'basico', estagioDepois: 'intermediario' });
-    expect(promocao!.desbloqueadas).toEqual(['subtracao']);
+  it('sobe de estágio ao zerar (20 de 20), agenda revisão e desbloqueia a dependente', () => {
+    const { perfil, resumo } = jogar(perfilNovo(), 20, 20);
+    expect(resumo.zerou).toBe(true);
+    expect(resumo.habilidades[0]).toMatchObject({ promovido: true, estagioAntes: 'basico', estagioDepois: 'intermediario' });
+    expect(resumo.desbloqueadas).toEqual(['subtracao']);
     expect(perfil.habilidades.adicao).toMatchObject({ estagio: 'intermediario', maestria: 0, partidasNoEstagio: 0 });
     expect(perfil.habilidades.adicao?.revisao).toMatchObject({ estagio: 'basico', indice: 0 });
   });
 
-  it('não promove com maestria alta antes de 3 partidas', () => {
+  it('não sobe sem zerar, mesmo com maestria alta e muitas partidas', () => {
     let perfil = perfilNovo();
     perfil.habilidades.adicao = {
       estagio: 'basico',
       maestria: 95,
-      partidasNoEstagio: 1,
+      partidasNoEstagio: 10,
       ultimosDesempenhos: [],
       revisao: null,
       revisoesRuinsSeguidas: 0,
       enferrujada: false,
     };
-    perfil = jogar(perfil, 20, 20).perfil;
-    expect(perfil.habilidades.adicao?.estagio).toBe('basico');
+    const r = jogar(perfil, 19, 20);
+    expect(r.resumo.zerou).toBe(false);
+    expect(r.perfil.habilidades.adicao?.estagio).toBe('basico');
+  });
+
+  it('zerar num estágio anterior não faz subir', () => {
+    const perfil = perfilNovo();
+    perfil.habilidades.adicao = {
+      estagio: 'intermediario',
+      maestria: 0,
+      partidasNoEstagio: 0,
+      ultimosDesempenhos: [],
+      revisao: null,
+      revisoesRuinsSeguidas: 0,
+      enferrujada: false,
+    };
+    const r = aplicarResultado(perfil, config({ estagio: 'basico' }), resultado(20, 20), HABILIDADES, agora);
+    expect(r.perfil.habilidades.adicao?.estagio).toBe('intermediario');
   });
 
   it('dá o bônus da primeira partida só uma vez por dia', () => {

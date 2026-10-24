@@ -17,9 +17,8 @@ export function Layout() {
           <NavLink to="/" end>
             Início
           </NavLink>
-          <NavLink to="/mapa">Mapa</NavLink>
           <NavLink to="/jogos">Jogos</NavLink>
-          <NavLink to="/perfil">Perfil</NavLink>
+          <NavLink to="/progresso">Progresso</NavLink>
         </nav>
         <span className="nivel-topo" title={titulo}>
           Nv. {nivel}

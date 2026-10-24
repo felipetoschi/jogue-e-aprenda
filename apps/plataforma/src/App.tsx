@@ -4,8 +4,7 @@ import { ProvedorProgresso } from './estado/progresso';
 import { Catalogo } from './paginas/Catalogo';
 import { Inicio } from './paginas/Inicio';
 import { Jogar } from './paginas/Jogar';
-import { Mapa } from './paginas/Mapa';
-import { Perfil } from './paginas/Perfil';
+import { Progresso } from './paginas/Progresso';
 import { Resultado } from './paginas/Resultado';
 
 function NaoEncontrada() {
@@ -25,10 +24,11 @@ export function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Inicio />} />
-            <Route path="mapa" element={<Mapa />} />
+            <Route path="progresso" element={<Progresso />} />
+            <Route path="mapa" element={<Navigate to="/progresso" replace />} />
             <Route path="jogos" element={<Catalogo />} />
             <Route path="resultado" element={<Resultado />} />
-            <Route path="perfil" element={<Perfil />} />
+            <Route path="perfil" element={<Navigate to="/progresso" replace />} />
             <Route path="sobre" element={<Navigate to="/" replace />} />
             <Route path="jogar/:jogoId" element={<Jogar />} />
             <Route path="*" element={<NaoEncontrada />} />

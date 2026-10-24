@@ -36,10 +36,10 @@ Para jogar a cobrinha sozinha, fora da plataforma: `npm run dev -w @jogue/jogo-c
 ## Estrutura
 
 ```
-apps/plataforma         site principal (React): início, mapa de progresso, jogos, partida, resultado, perfil
+apps/plataforma         site principal (React): início, jogos, partida, resultado e progresso
 packages/conteudo       todo o conteúdo de todos os jogos, separado por disciplina (habilidades e perguntas)
 packages/progressao     regras de estrelas, XP, nível, maestria, estágios, revisão e desbloqueio
-packages/sdk-jogo       contrato e canal de mensagens entre plataforma e jogos
+packages/sdk-jogo       contrato, padrão dos jogos (PADRAO) e canal de mensagens entre plataforma e jogos
 jogos/cobrinha-que-calcula  o primeiro jogo, com build próprio (canvas, sem framework)
 scripts/montar-dist.mjs junta o build da plataforma e dos jogos em dist/
 docs/                   arquitetura e guia para criar jogos

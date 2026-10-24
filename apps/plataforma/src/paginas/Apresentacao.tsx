@@ -1,12 +1,10 @@
-import { NOMES_ESTAGIO, ESTAGIOS } from '@jogue/sdk-jogo';
-import { PARAMETROS } from '@jogue/progressao';
+import { ESTAGIOS, NOMES_ESTAGIO, PADRAO } from '@jogue/sdk-jogo';
 import { Link } from 'react-router';
 import { DemoCobrinha } from '../componentes/DemoCobrinha';
 import { InstalarApp } from '../componentes/InstalarApp';
 import { MATERIAS, materiaPorId } from '@jogue/conteudo';
 import { JOGOS } from '../conteudo/jogos';
 
-const { promocao, partidasMinimas } = PARAMETROS.maestria;
 
 /** O que é o Jogue e Aprenda: página de entrada para quem chega e página "Sobre" para quem já joga. */
 export function Apresentacao() {
@@ -22,7 +20,7 @@ export function Apresentacao() {
             <Link className="botao grande" to="/jogos">
               Escolher um jogo
             </Link>
-            <Link className="botao grande secundario" to="/mapa">
+            <Link className="botao grande secundario" to="/progresso">
               Ver meu progresso
             </Link>
           </div>
@@ -40,13 +38,11 @@ export function Apresentacao() {
           </li>
           <li>
             <h3>Acerte</h3>
-            <p>Cada acerto aumenta sua maestria.</p>
+            <p>As perguntas vêm da disciplina que você escolheu.</p>
           </li>
           <li>
             <h3>Evolua</h3>
-            <p>
-              Maestria {promocao} em {partidasMinimas} partidas: próximo estágio.
-            </p>
+            <p>Zerou as {PADRAO.questoesPorPartida} perguntas? Você sobe de nível.</p>
           </li>
         </ol>
         <div className="escada" aria-label="Os quatro estágios">

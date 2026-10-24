@@ -42,6 +42,9 @@ export function Resultado() {
         ) : (
           <p className="aviso">{AVISOS_NAO_CONTOU[resumo.naoContou ?? 'abandono']}</p>
         )}
+        {resumo.zerou && !resumo.habilidades.some((m) => m.promovido) && !jogouEstagioAnterior && (
+          <p className="conquista">Você zerou o {NOMES_ESTAGIO[config.estagio]}!</p>
+        )}
         {subiuDeNivel && (
           <p className="conquista">
             Subiu para o nível {resumo.nivelDepois.nivel} · {resumo.nivelDepois.titulo}
@@ -65,7 +68,7 @@ export function Resultado() {
               </p>
             ) : m.promovido ? (
               <p className="conquista">
-                Subiu de estágio: {NOMES_ESTAGIO[m.estagioAntes]} → {NOMES_ESTAGIO[m.estagioDepois]}
+                Você zerou o {NOMES_ESTAGIO[m.estagioAntes]}! Agora você está no {NOMES_ESTAGIO[m.estagioDepois]}.
               </p>
             ) : (
               <p className="suave">Estágio {NOMES_ESTAGIO[m.estagioDepois]}</p>
