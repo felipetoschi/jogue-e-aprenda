@@ -95,7 +95,10 @@ export interface ResultadoJogo {
 export interface ManifestoJogo {
   id: string;
   nome: string;
+  /** Apresentação curta do jogo, mostrada no card. */
   descricao: string;
+  /** Ícone do jogo (caminho relativo à plataforma), arquivo do próprio jogo. */
+  icone: string;
   tipo: 'puzzle' | 'tabuleiro' | 'arcade';
   /** Disciplinas que o jogo oferece. As habilidades vêm do banco de conteúdo. */
   materias: string[];

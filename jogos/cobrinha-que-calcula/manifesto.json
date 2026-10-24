@@ -1,7 +1,8 @@
 {
   "id": "cobrinha-que-calcula",
   "nome": "Cobrinha que Calcula",
-  "descricao": "Guie a cobra até a resposta certa antes que a energia acabe. Errou, bateu ou ficou sem energia, a partida acaba.",
+  "descricao": "Guie a cobra até a resposta certa. A cada acerto ela cresce e fica mais rápida. Errou, bateu ou a energia acabou: fim de jogo.",
+  "icone": "jogos/cobrinha-que-calcula/icone.svg",
   "tipo": "arcade",
   "materias": ["matematica"],
   "formatos": ["resposta-curta"],

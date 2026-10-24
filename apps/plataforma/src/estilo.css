@@ -1019,3 +1019,32 @@ td .estrelas {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ---------- Cards dos jogos ---------- */
+
+.vitrine-jogos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.cartao-jogo.aberto {
+  grid-column: 1 / -1;
+}
+
+.jogo-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.jogo-icone {
+  flex: none;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px -10px rgb(18 26 51 / 0.6);
+}
+
+.cartao-jogo > .botao {
+  align-self: stretch;
+}

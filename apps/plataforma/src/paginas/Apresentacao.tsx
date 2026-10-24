@@ -80,8 +80,13 @@ export function Apresentacao() {
         <h2 id="jogos">Jogos</h2>
         <div className="vitrine">
           <article className="jogo-destaque">
-            <p className="sobretitulo">{cobrinha.materias.map((m) => materiaPorId(m)?.nome).join(' · ')}</p>
-            <h3>{cobrinha.nome}</h3>
+            <div className="jogo-cabecalho">
+              <img className="jogo-icone" src={cobrinha.icone} alt="" width={56} height={56} />
+              <div>
+                <h3>{cobrinha.nome}</h3>
+                <p className="sobretitulo">{cobrinha.materias.map((m) => materiaPorId(m)?.nome).join(' · ')}</p>
+              </div>
+            </div>
             <p>Coma a resposta certa antes que a energia acabe.</p>
             <Link className="botao" to="/jogos">
               Jogar

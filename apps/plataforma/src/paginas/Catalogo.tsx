@@ -13,14 +13,17 @@ import { linkParaJogar } from '../componentes/links';
 import { habilidadesDoJogo, JOGOS, materiasDoJogo } from '../conteudo/jogos';
 import { useProgresso } from '../estado/progresso';
 
-/** Escolha do jogo. No cartão de cada jogo: disciplina, habilidade e nível, e então Jogar. */
+/**
+ * Escolha do jogo: um card por jogo, com ícone, nome, apresentação e Jogar.
+ * Ao tocar em Jogar, o próprio card se abre com a escolha de habilidade e nível.
+ */
 export function Catalogo() {
   const [busca] = useSearchParams();
   const habilidadePedida = busca.get('habilidade') ?? undefined;
   return (
     <div className="pilha">
       <h1>Jogos</h1>
-      <div className="lista-habilidades">
+      <div className="vitrine-jogos">
         {JOGOS.map((jogo) => (
           <CartaoJogo key={jogo.id} jogo={jogo} habilidadePedida={habilidadePedida} />
         ))}
@@ -41,6 +44,8 @@ function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidad
   const [materiaId, setMateriaId] = useState(inicial?.materiaId ?? materias[0]?.id);
   const [habilidadeId, setHabilidadeId] = useState(inicial?.id);
   const [escolhido, setEscolhido] = useState<Estagio | null>(null);
+  // Vindo de "Treinar" no mapa, o card já abre com a habilidade marcada.
+  const [aberto, setAberto] = useState(() => !!habilidadePedida && todas.some((h) => h.id === habilidadePedida));
 
   const daMateria = todas.filter((h) => h.materiaId === materiaId);
   const def = daMateria.find((h) => h.id === habilidadeId) ?? daMateria.find((h) => estaDesbloqueada(perfil, h, HABILIDADES));
@@ -60,15 +65,33 @@ function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidad
     setEscolhido(null);
   }
 
-  return (
-    <article className="cartao cartao-jogo">
+  const cabecalho = (
+    <div className="jogo-cabecalho">
+      <img className="jogo-icone" src={jogo.icone} alt="" width={72} height={72} />
       <div>
+        <h2>{jogo.nome}</h2>
         <p className="sobretitulo">
           {jogo.materias.map((m) => materiaPorId(m)?.nome).join(' · ')} · {jogo.duracaoMinutos[0]} a {jogo.duracaoMinutos[1]} min
         </p>
-        <h2>{jogo.nome}</h2>
-        <p className="suave">{jogo.descricao}</p>
       </div>
+    </div>
+  );
+
+  if (!aberto) {
+    return (
+      <article className="cartao cartao-jogo">
+        {cabecalho}
+        <p>{jogo.descricao}</p>
+        <button type="button" className="botao" onClick={() => setAberto(true)}>
+          Jogar
+        </button>
+      </article>
+    );
+  }
+
+  return (
+    <article className="cartao cartao-jogo aberto">
+      {cabecalho}
 
       {materias.length > 1 && (
         <div className="opcoes-linha" role="radiogroup" aria-label="Disciplina">
@@ -150,7 +173,10 @@ function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidad
           disabled={!def}
           onClick={() => def && navegar(linkParaJogar(def.id, 'normal', { estagio: nivel, jogoId: jogo.id }) ?? '/jogos')}
         >
-          Jogar
+          Começar
+        </button>
+        <button type="button" className="botao secundario" onClick={() => setAberto(false)}>
+          Voltar
         </button>
       </div>
     </article>

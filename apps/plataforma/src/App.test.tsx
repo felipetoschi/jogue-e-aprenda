@@ -69,8 +69,14 @@ describe('plataforma', () => {
   it('só carrega o jogo, num iframe, ao clicar em Jogar', () => {
     window.location.hash = '#/jogos';
     render(<App />);
-    expect(document.querySelector('iframe')).toBeNull();
+    // Card fechado: ícone, nome, apresentação e Jogar.
+    expect(screen.getByRole('heading', { name: 'Cobrinha que Calcula' })).toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: 'Nível' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Jogar' }));
+    // Card aberto: escolhe habilidade e nível, e então Começar.
+    expect(screen.getByRole('radiogroup', { name: 'Nível' })).toBeInTheDocument();
+    expect(document.querySelector('iframe')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Começar' }));
     expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-que-calcula/index.html');
   });
 });
