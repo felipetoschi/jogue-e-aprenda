@@ -1,6 +1,7 @@
 import { HashRouter, Link, Route, Routes } from 'react-router';
 import { Layout } from './componentes/Layout';
 import { ProvedorProgresso } from './estado/progresso';
+import { Apresentacao } from './paginas/Apresentacao';
 import { Catalogo } from './paginas/Catalogo';
 import { Inicio } from './paginas/Inicio';
 import { Jogar } from './paginas/Jogar';
@@ -29,6 +30,7 @@ export function App() {
             <Route path="jogos" element={<Catalogo />} />
             <Route path="resultado" element={<Resultado />} />
             <Route path="perfil" element={<Perfil />} />
+            <Route path="sobre" element={<Apresentacao />} />
             <Route path="*" element={<NaoEncontrada />} />
           </Route>
           <Route path="jogar/:jogoId" element={<Jogar />} />

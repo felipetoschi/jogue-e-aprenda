@@ -1,6 +1,7 @@
 import { infoNivel } from '@jogue/progressao';
 import { NavLink, Outlet } from 'react-router';
 import { useProgresso } from '../estado/progresso';
+import { Marca } from './Marca';
 
 export function Layout() {
   const { perfil } = useProgresso();
@@ -9,7 +10,8 @@ export function Layout() {
     <div className="app">
       <header className="topo">
         <NavLink to="/" className="marca">
-          Jogue e Aprenda
+          <Marca />
+          <span>Jogue e Aprenda</span>
         </NavLink>
         <nav className="menu" aria-label="Principal">
           <NavLink to="/" end>
@@ -18,6 +20,7 @@ export function Layout() {
           <NavLink to="/mapa">Mapa</NavLink>
           <NavLink to="/jogos">Jogos</NavLink>
           <NavLink to="/perfil">Perfil</NavLink>
+          <NavLink to="/sobre">Sobre</NavLink>
         </nav>
         <span className="nivel-topo" title={titulo}>
           Nv. {nivel}

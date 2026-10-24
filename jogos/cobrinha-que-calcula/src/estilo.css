@@ -4,8 +4,8 @@
   --linha: #232c42;
   --texto: #eef2fb;
   --texto-suave: #9aa6c2;
-  --cobra: #4ade80;
-  --cobra-cabeca: #22c55e;
+  --cobra: #34c77b;
+  --cobra-cabeca: #22a35f;
   --opcao: #2b3654;
   --opcao-borda: #4b5b85;
   --destaque: #fbbf24;
@@ -23,7 +23,7 @@ body {
   height: 100%;
   background: var(--fundo);
   color: var(--texto);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: Lexend, 'Segoe UI', system-ui, sans-serif;
   overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
@@ -61,6 +61,7 @@ body {
 }
 
 .conta {
+  font-family: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   text-align: center;
   font-size: clamp(28px, 8vw, 44px);
   font-weight: 800;
@@ -124,6 +125,7 @@ body {
 .sobreposicao h1,
 .sobreposicao h2 {
   margin: 0;
+  font-family: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
 }
 
 .detalhe {
@@ -251,35 +253,62 @@ body {
   }
 }
 
-.joystick {
+/* Setas em cruz, com área de toque grande para não errar a direção. */
+.setas {
   display: none;
-  position: relative;
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  background: var(--painel);
-  border: 2px solid var(--opcao-borda);
+  grid-template-columns: repeat(3, 68px);
+  grid-template-rows: repeat(3, 60px);
+  grid-template-areas:
+    '. cima .'
+    'esquerda . direita'
+    '. baixo .';
+  gap: 6px;
   touch-action: none;
 }
 
-.joystick-pino {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 56px;
-  height: 56px;
-  margin: -28px 0 0 -28px;
-  border-radius: 50%;
+.seta {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--opcao-borda);
+  border-radius: 16px;
+  background: var(--painel);
+  color: var(--texto);
+  font-size: 22px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  transition: transform 0.08s, background 0.08s;
+}
+
+.seta.apertada {
   background: var(--opcao-borda);
+  transform: scale(0.94);
+}
+
+.seta-cima {
+  grid-area: cima;
+}
+
+.seta-esquerda {
+  grid-area: esquerda;
+}
+
+.seta-direita {
+  grid-area: direita;
+}
+
+.seta-baixo {
+  grid-area: baixo;
 }
 
 .so-toque {
   display: none;
 }
 
-/* Telas de toque: mostra o joystick embaixo, no centro. */
+/* Telas de toque: mostra as setas embaixo, no centro. */
 @media (hover: none) and (pointer: coarse) {
-  .joystick,
+  .setas {
+    display: grid;
+  }
   .so-toque {
     display: block;
   }

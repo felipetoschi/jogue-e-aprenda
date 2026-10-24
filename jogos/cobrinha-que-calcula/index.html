@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Lexend:wght@400;600;700&display=swap"
+    />
     <title>Cobrinha que Calcula</title>
   </head>
   <body>
@@ -29,7 +35,7 @@
             <li>Coma o resultado certo da conta.</li>
             <li>Errou, bateu na borda, no corpo ou ficou sem energia: fim de jogo.</li>
             <li class="so-teclado">Setas ou W A S D para virar, Espaço para pausar.</li>
-            <li class="so-toque">Use o joystick embaixo da tela ou deslize o dedo no tabuleiro.</li>
+            <li class="so-toque">Use as setas embaixo da tela ou deslize o dedo no tabuleiro.</li>
           </ul>
           <button id="botao-comecar" class="botao" type="button">Começar</button>
           <div id="contagem" class="contagem" hidden></div>
@@ -53,8 +59,11 @@
       <div class="controles">
         <button id="botao-som" class="botao-redondo botao-som" type="button" aria-label="Desligar som">♪</button>
         <button id="botao-pausa" class="botao-redondo botao-pausa" type="button" aria-label="Pausar">II</button>
-        <div id="joystick" class="joystick" aria-hidden="true">
-          <div id="joystick-pino" class="joystick-pino"></div>
+        <div id="setas" class="setas" role="group" aria-label="Direção">
+          <button type="button" class="seta seta-cima" data-direcao="cima" aria-label="Cima">▲</button>
+          <button type="button" class="seta seta-esquerda" data-direcao="esquerda" aria-label="Esquerda">◀</button>
+          <button type="button" class="seta seta-direita" data-direcao="direita" aria-label="Direita">▶</button>
+          <button type="button" class="seta seta-baixo" data-direcao="baixo" aria-label="Baixo">▼</button>
         </div>
       </div>
     </main>

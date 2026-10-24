@@ -11,14 +11,14 @@ afterEach(() => {
 describe('plataforma', () => {
   it('recebe quem chega pela primeira vez com início do zero ou prova de nivelamento', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Aprenda jogando, do básico ao avançado' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cada partida é um passo na sua evolução.' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Jogar agora' })).toHaveAttribute(
       'href',
       '#/jogar/cobrinha-que-calcula?habilidade=adicao&modo=normal',
     );
-    expect(screen.getByRole('link', { name: 'Prova de Adição' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Já sei o básico' })).toHaveAttribute(
       'href',
-      '#/jogar/cobrinha-que-calcula?habilidade=adicao&modo=nivelamento',
+      '#/jogar/cobrinha-que-calcula?habilidade=multiplicacao&modo=nivelamento',
     );
   });
 
@@ -29,6 +29,7 @@ describe('plataforma', () => {
     );
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Nível 1' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'O que é o Jogue e Aprenda?' })).toHaveAttribute('href', '#/sobre');
   });
 
   it('mostra as habilidades bloqueadas com o que falta', () => {

@@ -68,7 +68,7 @@ export class Desenhista {
     ctx.stroke();
 
     const tamanhoFonte = Math.max(11, casa * 0.75);
-    ctx.font = `800 ${tamanhoFonte}px system-ui, sans-serif`;
+    ctx.font = `700 ${tamanhoFonte}px Lexend, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const opcao of estado.opcoes) {

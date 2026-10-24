@@ -2,7 +2,7 @@ import './estilo.css';
 import { ESTAGIOS, NOMES_ESTAGIO, conectarAPlataforma, type ConexaoPlataforma, type Estagio } from '@jogue/sdk-jogo';
 import { explicarErro, formatarNumero, HABILIDADES_SUPORTADAS } from './contas';
 import { Desenhista } from './desenho';
-import { ouvirDeslize, ouvirJoystick, ouvirTeclado } from './entrada';
+import { ouvirDeslize, ouvirSetas, ouvirTeclado } from './entrada';
 import { avancar, criarJogo, pontuacaoDe, virar, type EstadoJogo, type Fim, type MotivoFim } from './jogo';
 import { ALERTA_ENERGIA, META_CONTAS, NOMES_HABILIDADE } from './regras';
 import { Retorno } from './retorno';
@@ -70,7 +70,7 @@ class Partida {
 
     const aoVirar = (d: Parameters<typeof virar>[1]) => this.fase === 'jogando' && virar(this.estado, d);
     ouvirTeclado({ aoVirar, aoPausar: () => this.alternarPausa() });
-    ouvirJoystick(el('joystick'), el('joystick-pino'), { aoVirar });
+    ouvirSetas(el('setas'), { aoVirar });
     ouvirDeslize(el('tabuleiro'), { aoVirar });
     document.addEventListener('visibilitychange', () => document.hidden && this.fase === 'jogando' && this.alternarPausa());
     window.addEventListener('resize', () => this.desenhista.redimensionar());
