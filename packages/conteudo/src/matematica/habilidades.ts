@@ -59,6 +59,21 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     },
   },
   {
+    id: 'todas-operacoes',
+    nome: 'Todas as operações',
+    materiaId: 'matematica',
+    formato: 'resposta-curta',
+    estagioInicial: 'basico',
+    // Aberta desde o início: mistura as quatro operações no nível escolhido.
+    prerequisitos: [],
+    estagios: {
+      basico: 'As quatro operações, com números pequenos',
+      intermediario: 'As quatro operações, até 100 e tabuada do 10',
+      avancado: 'As quatro operações, com números maiores',
+      mestre: 'As quatro operações, com decimais',
+    },
+  },
+  {
     id: 'expressoes',
     nome: 'Expressões',
     materiaId: 'matematica',

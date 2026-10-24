@@ -25,6 +25,13 @@ describe('banco de conteúdo', () => {
     }
   });
 
+  it('"Todas as operações" mistura as quatro operações e conta para ela mesma', () => {
+    const questoes = gerarQuestoes('todas-operacoes', 'intermediario', 0.5, 200, comSemente(9));
+    const sinais = new Set(questoes.map((q) => ['+', '−', '×', '÷'].find((s) => q.enunciado.includes(` ${s} `))));
+    expect(sinais).toEqual(new Set(['+', '−', '×', '÷']));
+    expect(questoes.every((q) => q.habilidadeId === 'todas-operacoes')).toBe(true);
+  });
+
   it('usa 3 opções no Básico e 4 no Mestre', () => {
     expect(gerarQuestoes('multiplicacao', 'basico', 0, 1, comSemente(5))[0]!.opcoes).toHaveLength(3);
     expect(gerarQuestoes('multiplicacao', 'mestre', 0, 1, comSemente(5))[0]!.opcoes).toHaveLength(4);
