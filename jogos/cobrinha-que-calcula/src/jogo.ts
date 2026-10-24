@@ -29,6 +29,8 @@ export interface Fim {
   /** Conta que estava na tela, para mostrar resolvida quando o jogador errou ou ficou sem energia. */
   conta: Conta;
   tipoErro: TipoErro | null;
+  /** Número que a cobra comeu, quando errou. */
+  valorEscolhido: number | null;
 }
 
 export interface ConfigJogo {
@@ -42,6 +44,8 @@ export interface EstadoJogo {
   /** Cabeça primeiro. */
   cobra: Posicao[];
   direcao: Direcao;
+  /** A cobra fica parada até o primeiro comando, para ninguém bater na borda antes de entender o controle. */
+  parada: boolean;
   /** Até 2 viradas guardadas, para uma volta rápida em "U" não se perder. */
   fila: Direcao[];
   crescerPendente: number;
@@ -77,6 +81,7 @@ export function criarJogo(config: ConfigJogo, rng: Rng): EstadoJogo {
     config,
     cobra,
     direcao: 'direita',
+    parada: true,
     fila: [],
     crescerPendente: 0,
     conta: gerarConta(config.habilidadeId, config.estagio, config.ajuste, regras.opcoes, rng),
@@ -96,14 +101,18 @@ export function criarJogo(config: ConfigJogo, rng: Rng): EstadoJogo {
   return estado;
 }
 
-/** Guarda uma virada. Ignora meia-volta e repetição da direção atual. */
+/** Guarda uma virada. Ignora meia-volta e repetição da direção atual. O primeiro comando põe a cobra em movimento. */
 export function virar(estado: EstadoJogo, direcao: Direcao): void {
   const referencia = estado.fila.at(-1) ?? estado.direcao;
+  if (estado.parada && direcao !== OPOSTA[referencia]) {
+    estado.parada = false;
+    estado.acumulado = 0;
+  }
   if (estado.fila.length >= 2 || direcao === referencia || direcao === OPOSTA[referencia]) return;
   estado.fila.push(direcao);
 }
 
-export type Evento = { tipo: 'acerto' } | { tipo: 'fim'; fim: Fim };
+export type Evento = { tipo: 'acerto'; pos: Posicao } | { tipo: 'fim'; fim: Fim };
 
 /** Avança o jogo em dt segundos. Devolve o que aconteceu, para som e animação. */
 export function avancar(estado: EstadoJogo, dt: number, rng: Rng): Evento[] {
@@ -118,6 +127,8 @@ export function avancar(estado: EstadoJogo, dt: number, rng: Rng): Evento[] {
     return [terminar(estado, 'energia', null)];
   }
 
+  // Parada, a energia continua caindo: o tempo para pensar na primeira conta não é infinito.
+  if (estado.parada) return eventos;
   estado.acumulado += dt;
   while (estado.acumulado >= estado.segundosPorPasso && !estado.fim) {
     estado.acumulado -= estado.segundosPorPasso;
@@ -149,7 +160,7 @@ function passo(estado: EstadoJogo, rng: Rng): Evento | null {
   if (!comida) return null;
 
   estado.tentativas++;
-  if (!comida.correta) return terminar(estado, 'erro', comida.tipoErro);
+  if (!comida.correta) return terminar(estado, 'erro', comida.tipoErro, comida.valor);
 
   estado.acertos++;
   estado.crescerPendente++;
@@ -162,11 +173,11 @@ function passo(estado: EstadoJogo, rng: Rng): Evento | null {
   estado.opcoes = posicionarOpcoes(estado.conta.opcoes, estado.cobra, rng);
   estado.energia = 1;
   estado.tempoNaConta = 0;
-  return { tipo: 'acerto' };
+  return { tipo: 'acerto', pos: nova };
 }
 
-function terminar(estado: EstadoJogo, motivo: MotivoFim, tipoErro: TipoErro | null): Evento {
-  estado.fim = { motivo, conta: estado.conta, tipoErro };
+function terminar(estado: EstadoJogo, motivo: MotivoFim, tipoErro: TipoErro | null, valorEscolhido: number | null = null): Evento {
+  estado.fim = { motivo, conta: estado.conta, tipoErro, valorEscolhido };
   return { tipo: 'fim', fim: estado.fim };
 }
 

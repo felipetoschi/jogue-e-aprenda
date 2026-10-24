@@ -4,7 +4,12 @@ import { avancar, criarJogo, dentroDoBloco, virar, type EstadoJogo, type Posicao
 import { LADO_OPCAO, META_CONTAS, TAMANHO_TABULEIRO } from './regras';
 
 const rng = comSemente(7);
-const novo = () => criarJogo({ habilidadeId: 'multiplicacao', estagio: 'basico', ajuste: 0 }, rng);
+/** Jogo já em movimento (sem esperar o primeiro comando). */
+const novo = () => {
+  const e = criarJogo({ habilidadeId: 'multiplicacao', estagio: 'basico', ajuste: 0 }, rng);
+  e.parada = false;
+  return e;
+};
 
 /** Avança exatamente um passo da cobra. */
 const umPasso = (e: EstadoJogo) => avancar(e, e.segundosPorPasso, rng);
@@ -31,7 +36,7 @@ describe('jogo da cobrinha', () => {
     porOpcaoNaFrente(e, true);
     const contaAntes = e.conta;
     e.energia = 0.5;
-    expect(umPasso(e)).toEqual([{ tipo: 'acerto' }]);
+    expect(umPasso(e)).toEqual([{ tipo: 'acerto', pos: { x: 10, y: 9 } }]);
     expect(e.acertos).toBe(1);
     expect(e.tentativas).toBe(1);
     expect(e.energia).toBe(1);
@@ -45,7 +50,7 @@ describe('jogo da cobrinha', () => {
     porOpcaoNaFrente(e, false);
     const conta = e.conta;
     const [evento] = umPasso(e);
-    expect(evento).toMatchObject({ tipo: 'fim', fim: { motivo: 'erro', conta } });
+    expect(evento).toMatchObject({ tipo: 'fim', fim: { motivo: 'erro', conta, valorEscolhido: e.opcoes.find((o) => !o.correta && o.pos.x === 10)!.valor } });
     expect(e.tentativas).toBe(1);
     expect(e.acertos).toBe(0);
   });
@@ -74,6 +79,20 @@ describe('jogo da cobrinha', () => {
     e.direcao = 'baixo';
     const [evento] = umPasso(e);
     expect(evento).toMatchObject({ tipo: 'fim', fim: { motivo: 'corpo' } });
+  });
+
+  it('espera o primeiro comando para andar, mas a energia continua caindo', () => {
+    const e = criarJogo({ habilidadeId: 'adicao', estagio: 'basico', ajuste: 0 }, rng);
+    const cabeca = { ...e.cobra[0]! };
+    avancar(e, 1, rng);
+    expect(e.cobra[0]).toEqual(cabeca);
+    expect(e.energia).toBeLessThan(1);
+    virar(e, 'esquerda');
+    expect(e.parada).toBe(true);
+    virar(e, 'direita');
+    expect(e.parada).toBe(false);
+    umPasso(e);
+    expect(e.cobra[0]).toEqual({ x: cabeca.x + 1, y: cabeca.y });
   });
 
   it('não deixa dar meia-volta e guarda no máximo 2 viradas', () => {

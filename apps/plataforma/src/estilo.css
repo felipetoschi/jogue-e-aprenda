@@ -436,3 +436,24 @@ td .estrelas {
   width: 100%;
   border: 0;
 }
+
+.mensagem-fim {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 46ch;
+  padding-bottom: 8px;
+}
+
+.mensagem-fim p {
+  color: var(--texto-suave);
+}
+
+.boas-vindas p:not(.sobretitulo) {
+  max-width: 62ch;
+}
+
+.contagem-erros {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

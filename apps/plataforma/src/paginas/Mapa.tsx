@@ -1,10 +1,12 @@
-import { estadoDe, PARAMETROS, prerequisitosPendentes, progressoMateria, revisaoVencida } from '@jogue/progressao';
+import { estadoDe, PARAMETROS, prerequisitosPendentes, progressoMateria, revisaoVencida, situacaoProva } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
 import { Barra, SeloEstagio, SeloMateria } from '../componentes/ui';
 import { HABILIDADES, MATERIAS, habilidadePorId } from '../conteudo/habilidades';
 import { useProgresso } from '../estado/progresso';
+
+const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' });
 
 export function Mapa() {
   const { perfil } = useProgresso();
@@ -29,6 +31,8 @@ export function Mapa() {
                 const pendentes = prerequisitosPendentes(perfil, h, HABILIDADES);
                 const bloqueada = pendentes.length > 0;
                 const link = linkParaJogar(h.id);
+                const prova = situacaoProva(perfil, h, agora);
+                const linkProva = prova?.disponivel ? linkParaJogar(h.id, 'nivelamento') : null;
                 return (
                   <article key={h.id} className={bloqueada ? 'cartao habilidade bloqueada' : 'cartao habilidade'}>
                     <div className="linha-titulo">
@@ -55,10 +59,20 @@ export function Mapa() {
                           {revisaoVencida(estado, agora) && <span className="etiqueta">Para revisar</span>}
                           {estado.enferrujada && <span className="etiqueta alerta">Enferrujada</span>}
                         </div>
-                        {link && (
-                          <Link className="botao pequeno" to={link}>
-                            Jogar
-                          </Link>
+                        <div className="acoes">
+                          {link && (
+                            <Link className="botao pequeno" to={link}>
+                              Jogar
+                            </Link>
+                          )}
+                          {prova && linkProva && (
+                            <Link className="botao pequeno secundario" to={linkProva}>
+                              Já sei: prova do {NOMES_ESTAGIO[prova.estagio]}
+                            </Link>
+                          )}
+                        </div>
+                        {prova?.liberaEm && (
+                          <p className="suave">Nova prova em {formatoDia.format(new Date(prova.liberaEm))}</p>
                         )}
                       </>
                     )}

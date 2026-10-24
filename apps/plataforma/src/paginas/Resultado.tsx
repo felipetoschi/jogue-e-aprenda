@@ -1,9 +1,16 @@
+import { PARAMETROS, type ResumoPartida } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
 import { Link, Navigate, useLocation } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
 import { Barra, Estrelas, SeloMateria } from '../componentes/ui';
 import { habilidadePorId, materiaPorId } from '../conteudo/habilidades';
 import type { EstadoResultado } from './Jogar';
+
+const AVISOS_NAO_CONTOU: Record<NonNullable<ResumoPartida['naoContou']>, string> = {
+  abandono: 'Partida abandonada: não conta para a progressão.',
+  treino: 'Partida de treino: não conta para a progressão.',
+  'sem-tentativas': 'Nenhuma conta respondida: a partida não conta para a progressão.',
+};
 
 export function Resultado() {
   const estado = useLocation().state as EstadoResultado | null;
@@ -16,12 +23,29 @@ export function Resultado() {
   return (
     <div className="pilha resultado">
       <section className="cartao centro">
+        {resultado.mensagem && (
+          <div className="mensagem-fim">
+            <h2>{resultado.mensagem.titulo}</h2>
+            {resultado.mensagem.detalhe && <p>{resultado.mensagem.detalhe}</p>}
+          </div>
+        )}
         <Estrelas quantidade={resumo.estrelas} />
         <h1>{resultado.pontuacao} pontos</h1>
         <p className="suave">
           {acertos} acerto(s) em {tentativas} tentativa(s)
         </p>
-        <p className="xp-ganho">+{resumo.xpGanho} XP</p>
+        {resumo.contou ? (
+          <p className="xp-ganho">+{resumo.xpGanho} XP</p>
+        ) : (
+          <p className="aviso">{AVISOS_NAO_CONTOU[resumo.naoContou ?? 'abandono']}</p>
+        )}
+        {resumo.nivelamento && (
+          <p className={resumo.nivelamento.aprovado ? 'conquista' : 'aviso'}>
+            {resumo.nivelamento.aprovado
+              ? `Prova aprovada: você pulou para o ${NOMES_ESTAGIO[resumo.nivelamento.estagio]}`
+              : `Prova não aprovada. Para pular, acerte 85% em pelo menos ${PARAMETROS.nivelamento.tentativasMinimas} contas. Nova prova em ${PARAMETROS.nivelamento.diasEntreProvas} dias.`}
+          </p>
+        )}
         {subiuDeNivel && (
           <p className="conquista">
             Subiu para o nível {resumo.nivelDepois.nivel} · {resumo.nivelDepois.titulo}

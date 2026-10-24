@@ -85,3 +85,43 @@ export function ouvirJoystick(base: HTMLElement, pino: HTMLElement, comandos: Pi
     base.removeEventListener('pointercancel', soltar);
   };
 }
+
+/** Distância mínima, em pixels, para um arrasto contar como deslize. */
+const DESLIZE_MINIMO = 24;
+
+/**
+ * Deslizar o dedo no tabuleiro também vira a cobra. Cada deslize longo o bastante
+ * emite uma direção, e o ponto de partida se renova para permitir viradas seguidas.
+ */
+export function ouvirDeslize(area: HTMLElement, comandos: Pick<Comandos, 'aoVirar'>): () => void {
+  let origem: { x: number; y: number; id: number } | null = null;
+
+  function tocar(evento: PointerEvent) {
+    if (evento.pointerType === 'mouse') return;
+    origem = { x: evento.clientX, y: evento.clientY, id: evento.pointerId };
+  }
+
+  function mover(evento: PointerEvent) {
+    if (!origem || evento.pointerId !== origem.id) return;
+    const dx = evento.clientX - origem.x;
+    const dy = evento.clientY - origem.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < DESLIZE_MINIMO) return;
+    comandos.aoVirar(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'direita' : 'esquerda') : dy > 0 ? 'baixo' : 'cima');
+    origem = { x: evento.clientX, y: evento.clientY, id: evento.pointerId };
+  }
+
+  function soltar() {
+    origem = null;
+  }
+
+  area.addEventListener('pointerdown', tocar);
+  area.addEventListener('pointermove', mover);
+  area.addEventListener('pointerup', soltar);
+  area.addEventListener('pointercancel', soltar);
+  return () => {
+    area.removeEventListener('pointerdown', tocar);
+    area.removeEventListener('pointermove', mover);
+    area.removeEventListener('pointerup', soltar);
+    area.removeEventListener('pointercancel', soltar);
+  };
+}

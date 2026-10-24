@@ -329,3 +329,29 @@ export function gerarConta(habilidadeId: string, estagio: Estagio, ajuste: numbe
     opcoes: embaralhar([{ valor: bruta.resposta, correta: true, tipoErro: null }, ...falsas], rng),
   };
 }
+
+const ROTULOS_ERRO: Record<TipoErro, string> = {
+  'vizinho-tabuada': 'Vizinho da tabuada',
+  'por-pouco': 'Errou por pouco',
+  'operacao-trocada': 'Operação trocada',
+  'digitos-invertidos': 'Dígitos invertidos',
+  'sem-reserva': 'Esqueceu o "vai um" ou o empréstimo',
+  'ordem-operacoes': 'Ordem das operações',
+  'sinal-trocado': 'Sinal trocado',
+};
+
+/** Explica, numa frase, o erro que a opção escolhida imita. */
+export function explicarErro(conta: Conta, valor: number, tipo: TipoErro): { rotulo: string; explicacao: string } {
+  const v = formatarNumero(valor);
+  const certa = `${conta.texto} = ${formatarNumero(conta.resposta)}`;
+  const explicacoes: Record<TipoErro, string> = {
+    'vizinho-tabuada': `${v} é o resultado vizinho na tabuada. ${certa}.`,
+    'por-pouco': `Quase! ${v} ficou perto, mas ${certa}.`,
+    'operacao-trocada': `${v} é o resultado de outra operação. ${certa}.`,
+    'digitos-invertidos': `${v} tem os algarismos da resposta trocados de lugar. ${certa}.`,
+    'sem-reserva': `${v} é o que dá esquecendo o "vai um" ou o empréstimo entre as casas. ${certa}.`,
+    'ordem-operacoes': `${v} é o que dá resolvendo da esquerda para a direita. Parênteses vêm primeiro, depois × e ÷, depois + e −. ${certa}.`,
+    'sinal-trocado': `${v} está com o sinal trocado: o número maior está sendo subtraído. ${certa}.`,
+  };
+  return { rotulo: ROTULOS_ERRO[tipo], explicacao: explicacoes[tipo] };
+}

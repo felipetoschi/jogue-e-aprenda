@@ -14,7 +14,8 @@ export const NOMES_ESTAGIO: Record<Estagio, string> = {
   mestre: 'Mestre',
 };
 
-export type ModoPartida = 'normal' | 'revisao' | 'treino';
+/** nivelamento = prova do próximo estágio, para quem já sabe pular o atual. */
+export type ModoPartida = 'normal' | 'revisao' | 'treino' | 'nivelamento';
 
 /** O que a plataforma entrega ao jogo ao iniciar uma partida. */
 export interface ConfigPartida {
@@ -24,6 +25,17 @@ export interface ConfigPartida {
   /** Dificuldade dentro do estágio, de 0 (mais fácil) a 1 (mais difícil). */
   ajuste: number;
   modo: ModoPartida;
+}
+
+/** Um erro explicado, para a plataforma mostrar o que a pessoa confundiu. */
+export interface ErroExplicado {
+  habilidadeId: string;
+  /** Identificador estável do tipo de erro, para agrupar no perfil. */
+  tipo: string;
+  /** Nome curto do tipo de erro, ex.: "Vizinho da tabuada". */
+  rotulo: string;
+  /** Frase para o jogador, ex.: "48 é 7 × 7. 7 × 8 = 56." */
+  explicacao: string;
 }
 
 export interface DesempenhoHabilidade {
@@ -41,6 +53,9 @@ export interface ResultadoJogo {
   desempenho: DesempenhoHabilidade[];
   ajudas: number;
   status: 'concluida' | 'abandonada';
+  /** Como a partida terminou, nas palavras do jogo (ex.: "Bateu na borda"). */
+  mensagem?: { titulo: string; detalhe?: string };
+  erros?: ErroExplicado[];
   /** Dados próprios do jogo, guardados no histórico (ex.: maior tamanho da cobra). */
   extras?: Record<string, unknown>;
 }

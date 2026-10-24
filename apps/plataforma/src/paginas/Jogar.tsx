@@ -1,4 +1,4 @@
-import { configParaPartida, estadoDe, estaDesbloqueada, type ResumoPartida } from '@jogue/progressao';
+import { configParaPartida, estadoDe, estaDesbloqueada, situacaoProva, type ResumoPartida } from '@jogue/progressao';
 import { abrirCanalComJogo, type ConfigPartida, type ModoPartida, type ResultadoJogo } from '@jogue/sdk-jogo';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
@@ -67,6 +67,16 @@ export function Jogar() {
     );
   }
 
+  if (modo === 'nivelamento' && !situacaoProva(perfil, def)?.disponivel) {
+    return (
+      <div className="conteudo pilha">
+        <h1>A prova de {def.nome} não está disponível agora</h1>
+        <p className="suave">Cada prova pode ser feita uma vez por semana, e não há prova depois do Mestre.</p>
+        <Link to="/mapa">Voltar ao mapa</Link>
+      </div>
+    );
+  }
+
   return <TelaPartida key={`${def.id}-${modo}`} jogoId={jogo.id} url={jogo.url} config={{ ...configParaPartida(perfil, def, modo), partidaId: novoId() }} />;
 }
 
@@ -116,6 +126,7 @@ function TelaPartida({ jogoId, url, config: configInicial }: { jogoId: string; u
           ← Sair
         </button>
         {config.modo === 'revisao' && <span className="suave">Revisão</span>}
+        {config.modo === 'nivelamento' && <span className="suave">Prova de nivelamento</span>}
       </div>
       <iframe ref={iframe} className="partida-jogo" src={url} title="Jogo" allow="fullscreen" />
     </div>

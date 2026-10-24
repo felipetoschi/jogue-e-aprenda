@@ -1,17 +1,30 @@
 import { formatarNumero } from './contas';
-import type { EstadoJogo } from './jogo';
+import type { EstadoJogo, Posicao } from './jogo';
 import { ALERTA_ENERGIA, LADO_OPCAO, TAMANHO_TABULEIRO } from './regras';
 
 const cor = (nome: string) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 
+interface Efeito {
+  pos: Posicao;
+  inicio: number;
+  cor: string;
+}
+
+/** Duração, em segundos, do anel que marca um acerto ou erro. */
+const DURACAO_EFEITO = 0.45;
+
 export class Desenhista {
   private readonly ctx: CanvasRenderingContext2D;
+  private efeitos: Efeito[] = [];
+  private readonly reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private casa = 0;
-  private cores = { linha: '', cobra: '', cabeca: '', opcao: '', borda: '', texto: '' };
+  private cores = { acerto: '', erro: '', linha: '', cobra: '', cabeca: '', opcao: '', borda: '', texto: '' };
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
     this.cores = {
+      acerto: cor('--cobra'),
+      erro: cor('--perigo'),
       linha: cor('--linha'),
       cobra: cor('--cobra'),
       cabeca: cor('--cobra-cabeca'),
@@ -30,6 +43,12 @@ export class Desenhista {
     this.canvas.height = Math.round(lado * densidade);
     this.ctx.setTransform(densidade, 0, 0, densidade, 0, 0);
     this.casa = lado / TAMANHO_TABULEIRO;
+  }
+
+  /** Marca a casa onde a cobra comeu: verde no acerto, vermelho no erro. */
+  marcar(pos: Posicao, tipo: 'acerto' | 'erro', tempo: number): void {
+    if (this.reduzirMovimento) return;
+    this.efeitos.push({ pos, inicio: tempo, cor: tipo === 'acerto' ? this.cores.acerto : this.cores.erro });
   }
 
   desenhar(estado: EstadoJogo, tempo: number): void {
@@ -78,6 +97,18 @@ export class Desenhista {
       ctx.roundRect(parte.x * casa + margem, parte.y * casa + margem, casa - margem * 2, casa - margem * 2, casa * 0.3);
       ctx.fill();
     });
+    ctx.globalAlpha = 1;
+
+    this.efeitos = this.efeitos.filter((e) => tempo - e.inicio < DURACAO_EFEITO);
+    for (const efeito of this.efeitos) {
+      const progresso = (tempo - efeito.inicio) / DURACAO_EFEITO;
+      ctx.globalAlpha = 1 - progresso;
+      ctx.strokeStyle = efeito.cor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc((efeito.pos.x + 0.5) * casa, (efeito.pos.y + 0.5) * casa, casa * (0.6 + progresso * 2.2), 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
   }
 }

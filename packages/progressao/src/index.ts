@@ -16,5 +16,13 @@ export {
   melhorSelo,
 } from './desbloqueio';
 export { revisaoVencida, aplicarRevisao } from './revisao';
-export { aplicarResultado, configParaPartida, type ResumoPartida, type MudancaHabilidade, type ConfigSemId } from './processar';
+export {
+  aplicarResultado,
+  configParaPartida,
+  situacaoProva,
+  type ResumoPartida,
+  type MudancaHabilidade,
+  type ConfigSemId,
+  type SituacaoProva,
+} from './processar';
 export { sugerirProximaPartida } from './sugestao';

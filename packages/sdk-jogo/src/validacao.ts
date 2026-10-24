@@ -25,5 +25,6 @@ export function validarResultado(resultado: ResultadoJogo, config: ConfigPartida
       }
     }
   }
+  if (resultado.erros !== undefined && !Array.isArray(resultado.erros)) problemas.push('erros inválidos');
   return problemas;
 }

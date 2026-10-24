@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { perfilNovo } from './perfil';
-import { aplicarResultado } from './processar';
+import { aplicarResultado, configParaPartida, situacaoProva } from './processar';
 import { sugerirProximaPartida } from './sugestao';
 import { config, HABILIDADES, resultado } from './teste-util';
 import type { PerfilProgresso } from './tipos';
@@ -92,5 +92,45 @@ describe('sugerirProximaPartida', () => {
       enferrujada: false,
     };
     expect(sugerirProximaPartida(perfil, HABILIDADES, agora)).toMatchObject({ habilidadeId: 'adicao', estagio: 'basico', modo: 'revisao' });
+  });
+});
+
+describe('partidas que não contam', () => {
+  it('não dá XP nem o bônus do dia a uma partida sem nenhuma tentativa', () => {
+    const vazia = aplicarResultado(perfilNovo(), config(), resultado(0, 0), HABILIDADES, agora);
+    expect(vazia.resumo).toMatchObject({ contou: false, naoContou: 'sem-tentativas', xpGanho: 0 });
+    expect(vazia.perfil).toEqual(perfilNovo());
+    // O bônus da primeira do dia continua disponível para a próxima partida de verdade.
+    expect(jogar(vazia.perfil, 0, 1).resumo.xpGanho).toBe(15);
+  });
+});
+
+describe('prova de nivelamento', () => {
+  const prova = (perfil: PerfilProgresso, acertos: number, tentativas: number) =>
+    aplicarResultado(perfil, config({ estagio: 'intermediario', modo: 'nivelamento' }), resultado(acertos, tentativas), HABILIDADES, agora);
+
+  it('pula o estágio com 85% ou mais em pelo menos 10 tentativas', () => {
+    const { perfil, resumo } = prova(perfilNovo(), 18, 20);
+    expect(resumo.nivelamento).toEqual({ estagio: 'intermediario', aprovado: true });
+    expect(resumo.habilidades[0]).toMatchObject({ promovido: true, estagioDepois: 'intermediario' });
+    expect(perfil.habilidades.adicao).toMatchObject({ estagio: 'intermediario', partidasNoEstagio: 1, maestria: 36 });
+    expect(resumo.desbloqueadas).toEqual(['subtracao']);
+  });
+
+  it('não pula com poucas tentativas, mesmo acertando todas', () => {
+    const { perfil, resumo } = prova(perfilNovo(), 5, 5);
+    expect(resumo.nivelamento?.aprovado).toBe(false);
+    expect(perfil.habilidades.adicao).toMatchObject({ estagio: 'basico', maestria: 0 });
+  });
+
+  it('libera uma nova prova só depois de 7 dias', () => {
+    const def = HABILIDADES[0]!;
+    const { perfil } = prova(perfilNovo(), 5, 12);
+    expect(situacaoProva(perfil, def, agora)).toMatchObject({ estagio: 'intermediario', disponivel: false });
+    expect(situacaoProva(perfil, def, new Date('2026-03-17T15:00:00Z'))?.disponivel).toBe(true);
+  });
+
+  it('monta a prova no estágio seguinte ao atual', () => {
+    expect(configParaPartida(perfilNovo(), HABILIDADES[0]!, 'nivelamento')).toMatchObject({ estagio: 'intermediario', modo: 'nivelamento' });
   });
 });

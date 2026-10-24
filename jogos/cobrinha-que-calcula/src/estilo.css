@@ -185,9 +185,8 @@ body {
   min-height: 140px;
 }
 
-.botao-pausa {
+.botao-redondo {
   position: absolute;
-  right: 0;
   top: 8px;
   width: 44px;
   height: 44px;
@@ -196,6 +195,60 @@ body {
   background: var(--painel);
   color: var(--texto);
   font-weight: 800;
+}
+
+.botao-pausa {
+  right: 0;
+}
+
+.botao-som {
+  left: 0;
+}
+
+.dica {
+  text-align: center;
+  color: var(--destaque);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.dica[hidden] {
+  display: none;
+}
+
+.explicacao {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--texto);
+  font-size: 15px;
+}
+
+.conta.acerto {
+  animation: piscar-acerto 0.35s ease-out;
+}
+
+.conta.erro {
+  animation: piscar-erro 0.5s ease-out;
+}
+
+@keyframes piscar-acerto {
+  from {
+    color: var(--cobra);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes piscar-erro {
+  from {
+    color: var(--perigo);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conta.acerto,
+  .conta.erro {
+    animation: none;
+  }
 }
 
 .joystick {
