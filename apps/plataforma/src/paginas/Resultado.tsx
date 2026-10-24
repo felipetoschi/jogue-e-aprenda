@@ -107,13 +107,12 @@ export function Resultado() {
           to={
             linkParaJogar(config.habilidadeId, 'normal', {
               estagio: jogouEstagioAnterior ? config.estagio : undefined,
-              iniciar: true,
             }) ?? '/jogos'
           }
         >
           Jogar de novo
         </Link>
-        <Link className="botao secundario" to={linkParaJogar(config.habilidadeId) ?? '/jogos'}>
+        <Link className="botao secundario" to="/mapa">
           Trocar nível
         </Link>
 

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { App } from './App';
 
@@ -42,7 +42,16 @@ describe('plataforma', () => {
     expect(screen.getAllByRole('link', { name: 'Já sei: prova do Intermediário' }).length).toBeGreaterThan(0);
   });
 
-  it('seleciona o estágio mais alto já alcançado e deixa voltar aos anteriores', () => {
+  it('carrega a partida num iframe só ao abrir o jogo, direto no nível mais alto', () => {
+    render(<App />);
+    expect(document.querySelector('iframe')).toBeNull();
+    cleanup();
+    window.location.hash = '#/jogar/cobrinha-que-calcula?habilidade=adicao&modo=normal';
+    render(<App />);
+    expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-que-calcula/index.html');
+  });
+
+  it('no mapa, marca o nível mais alto já alcançado e deixa escolher um anterior', () => {
     localStorage.setItem(
       'jogue-e-aprenda:perfil',
       JSON.stringify({
@@ -50,25 +59,13 @@ describe('plataforma', () => {
         habilidades: { adicao: { estagio: 'intermediario', maestria: 10, partidasNoEstagio: 1, ultimosDesempenhos: [], revisao: null, revisoesRuinsSeguidas: 0, enferrujada: false } },
       }),
     );
-    window.location.hash = '#/jogar/cobrinha-que-calcula?habilidade=adicao&modo=normal';
+    window.location.hash = '#/mapa';
     render(<App />);
-    expect(screen.getByRole('radio', { name: 'Intermediário' })).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(screen.getByRole('radio', { name: 'Básico' }));
-    expect(screen.getByRole('radio', { name: 'Básico' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByText('Vale XP, mas não muda sua maestria no Intermediário.')).toBeInTheDocument();
-  });
-
-  it('carrega a partida num iframe só ao abrir o jogo', () => {
-    render(<App />);
-    expect(document.querySelector('iframe')).toBeNull();
-    cleanup();
-    window.location.hash = '#/jogar/cobrinha-que-calcula?habilidade=adicao&modo=normal';
-    render(<App />);
-    // Primeiro a escolha de nível, com o estágio atual selecionado e os seguintes bloqueados.
-    expect(document.querySelector('iframe')).toBeNull();
-    expect(screen.getByRole('radio', { name: 'Básico' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByRole('radio', { name: 'Intermediário' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Jogar' }));
-    expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-que-calcula/index.html');
+    const niveis = screen.getByRole('radiogroup', { name: 'Nível de Adição' });
+    const basico = within(niveis).getByRole('radio', { name: 'Básico' });
+    expect(within(niveis).getByRole('radio', { name: 'Intermediário' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(niveis).getByRole('radio', { name: 'Avançado' })).toBeDisabled();
+    fireEvent.click(basico);
+    expect(basico).toHaveAttribute('aria-checked', 'true');
   });
 });

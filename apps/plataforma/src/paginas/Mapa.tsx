@@ -1,16 +1,18 @@
 import {
   estadoDe,
+  estagiosLiberados,
   PARAMETROS,
   prerequisitosPendentes,
   progressoMateria,
   revisaoVencida,
   situacaoProva,
 } from '@jogue/progressao';
-import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
-import { Link } from 'react-router';
+import { ESTAGIOS, NOMES_ESTAGIO, type Estagio } from '@jogue/sdk-jogo';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { linkParaJogar } from '../componentes/links';
 import { Barra, SeloEstagio, SeloMateria } from '../componentes/ui';
-import { HABILIDADES, MATERIAS, habilidadePorId } from '../conteudo/habilidades';
+import { HABILIDADES, MATERIAS, habilidadePorId, type Habilidade } from '../conteudo/habilidades';
 import { useProgresso } from '../estado/progresso';
 
 const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' });
@@ -32,64 +34,111 @@ export function Mapa() {
               <SeloMateria selo={perfil.selos[materia.id]} />
             </div>
             <p className="suave">{Math.round(progresso * 100)}% da matéria dominada</p>
-            <div className="grade">
-              {habilidades.map((h) => {
-                const estado = estadoDe(perfil, h);
-                const pendentes = prerequisitosPendentes(perfil, h, HABILIDADES);
-                const bloqueada = pendentes.length > 0;
-                const link = linkParaJogar(h.id);
-                const prova = situacaoProva(perfil, h, agora);
-                const linkProva = prova?.disponivel ? linkParaJogar(h.id, 'nivelamento') : null;
-                return (
-                  <article key={h.id} className={bloqueada ? 'cartao habilidade bloqueada' : 'cartao habilidade'}>
-                    <div className="linha-titulo">
-                      <h3>{h.nome}</h3>
-                      <SeloEstagio estagio={estado.estagio} />
-                    </div>
-                    <p className="suave">{h.estagios[estado.estagio]}</p>
-                    {bloqueada ? (
-                      <p className="aviso">
-                        Falta:{' '}
-                        {pendentes
-                          .map((p) => `${habilidadePorId(p.habilidadeId)?.nome ?? p.habilidadeId} — ${NOMES_ESTAGIO[p.estagio]}`)
-                          .join(', ')}
-                      </p>
-                    ) : (
-                      <>
-                        <Barra valor={estado.maestria} maximo={100} rotulo={`Maestria em ${h.nome}`} />
-                        <p className="suave">
-                          {estado.estagio === 'mestre'
-                            ? `Domínio ${estado.maestria}`
-                            : `Maestria ${estado.maestria} de ${PARAMETROS.maestria.promocao} · ${estado.partidasNoEstagio} partida(s) no estágio`}
-                        </p>
-                        <div className="etiquetas">
-                          {revisaoVencida(estado, agora) && <span className="etiqueta">Para revisar</span>}
-                          {estado.enferrujada && <span className="etiqueta alerta">Enferrujada</span>}
-                        </div>
-                        <div className="acoes">
-                          {link && (
-                            <Link className="botao pequeno" to={link}>
-                              Jogar
-                            </Link>
-                          )}
-                          {prova && linkProva && (
-                            <Link className="botao pequeno secundario" to={linkProva}>
-                              Já sei: prova do {NOMES_ESTAGIO[prova.estagio]}
-                            </Link>
-                          )}
-                        </div>
-                        {prova?.liberaEm && (
-                          <p className="suave">Nova prova em {formatoDia.format(new Date(prova.liberaEm))}</p>
-                        )}
-                      </>
-                    )}
-                  </article>
-                );
-              })}
+            <div className="lista-habilidades">
+              {habilidades.map((h) => (
+                <CartaoHabilidade key={h.id} habilidade={h} agora={agora} />
+              ))}
             </div>
           </section>
         );
       })}
     </div>
+  );
+}
+
+/** Cartão de uma habilidade: progresso, níveis lado a lado (o mais alto já alcançado vem marcado) e Jogar. */
+function CartaoHabilidade({ habilidade: h, agora }: { habilidade: Habilidade; agora: Date }) {
+  const { perfil } = useProgresso();
+  const navegar = useNavigate();
+  const estado = estadoDe(perfil, h);
+  const [escolhido, setEscolhido] = useState<Estagio>(estado.estagio);
+  const pendentes = prerequisitosPendentes(perfil, h, HABILIDADES);
+  const liberados = estagiosLiberados(perfil, h);
+  const estagios = ESTAGIOS.filter((e) => ESTAGIOS.indexOf(e) >= ESTAGIOS.indexOf(h.estagioInicial));
+  const prova = situacaoProva(perfil, h, agora);
+  const linkProva = prova?.disponivel ? linkParaJogar(h.id, 'nivelamento') : null;
+  // Se o jogador subiu de estágio, o mais alto passa a ser o padrão.
+  const nivel = liberados.includes(escolhido) ? escolhido : estado.estagio;
+
+  if (pendentes.length > 0) {
+    return (
+      <article className="cartao habilidade bloqueada">
+        <div className="linha-titulo">
+          <h3>{h.nome}</h3>
+          <SeloEstagio estagio={estado.estagio} />
+        </div>
+        <p className="aviso">
+          Falta: {pendentes.map((p) => `${habilidadePorId(p.habilidadeId)?.nome ?? p.habilidadeId} — ${NOMES_ESTAGIO[p.estagio]}`).join(', ')}
+        </p>
+      </article>
+    );
+  }
+
+  return (
+    <article className="cartao habilidade">
+      <div className="linha-titulo">
+        <h3>{h.nome}</h3>
+        <SeloEstagio estagio={estado.estagio} />
+      </div>
+      <Barra valor={estado.maestria} maximo={100} rotulo={`Maestria em ${h.nome}`} />
+      <p className="suave">
+        {estado.estagio === 'mestre'
+          ? `Domínio ${estado.maestria}`
+          : `Maestria ${estado.maestria} de ${PARAMETROS.maestria.promocao} · ${estado.partidasNoEstagio} partida(s) no estágio`}
+      </p>
+      <div className="etiquetas">
+        {revisaoVencida(estado, agora) && <span className="etiqueta">Para revisar</span>}
+        {estado.enferrujada && <span className="etiqueta alerta">Enferrujada</span>}
+      </div>
+
+      <div className="seletor-estagio" role="radiogroup" aria-label={`Nível de ${h.nome}`}>
+        {estagios.map((e) => {
+          const liberado = liberados.includes(e);
+          return (
+            <button
+              key={e}
+              type="button"
+              role="radio"
+              aria-checked={e === nivel}
+              className={`opcao estagio-${e}${e === nivel ? ' selecionada' : ''}`}
+              disabled={!liberado}
+              onClick={() => setEscolhido(e)}
+            >
+              {!liberado && <Cadeado />}
+              {NOMES_ESTAGIO[e]}
+            </button>
+          );
+        })}
+      </div>
+      <p className="suave">
+        {h.estagios[nivel]}
+        {nivel !== estado.estagio && ` · vale XP, não muda a maestria do ${NOMES_ESTAGIO[estado.estagio]}`}
+      </p>
+
+      <div className="acoes">
+        <button
+          type="button"
+          className="botao"
+          onClick={() => navegar(linkParaJogar(h.id, 'normal', { estagio: nivel }) ?? '/jogos')}
+        >
+          Jogar
+        </button>
+        {prova && linkProva && (
+          <Link className="link-discreto" to={linkProva}>
+            Já sei: prova do {NOMES_ESTAGIO[prova.estagio]}
+          </Link>
+        )}
+      </div>
+      {prova?.liberaEm && <p className="suave">Nova prova em {formatoDia.format(new Date(prova.liberaEm))}</p>}
+    </article>
+  );
+}
+
+function Cadeado() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className="cadeado">
+      <rect x="2" y="5" width="8" height="6" rx="1.5" fill="currentColor" />
+      <path d="M4 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
   );
 }

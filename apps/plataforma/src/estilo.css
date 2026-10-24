@@ -891,39 +891,13 @@ td .estrelas {
   flex-wrap: wrap;
 }
 
-/* ---------- Antes da partida ---------- */
-
-.pre-jogo {
-  max-width: 640px;
-  gap: 28px;
-}
-
-.pilha-curta {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.rotulo-grupo {
-  font-family: var(--fonte-texto);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tinta-suave);
-}
-
-.opcoes-linha {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+/* ---------- Seletor de nível ---------- */
 
 .opcao {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 5px;
+  padding: 8px 10px;
   border: 2px solid var(--linha);
   border-radius: 12px;
   background: var(--superficie);
@@ -946,20 +920,33 @@ td .estrelas {
 }
 
 /* Níveis lado a lado, com a cor de cada estágio. */
-.seletor-estagio {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.lista-habilidades {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-@media (max-width: 560px) {
+.habilidade {
+  container-type: inline-size;
+}
+
+/* Níveis um ao lado do outro; no cartão estreito do celular, dois por linha. */
+.seletor-estagio {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 640px;
+}
+
+@container (min-width: 520px) {
   .seletor-estagio {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 .seletor-estagio .opcao {
   justify-content: center;
-  padding: 14px 10px;
+  font-size: 14px;
 }
 
 .seletor-estagio .opcao.estagio-intermediario:not(:disabled) {
