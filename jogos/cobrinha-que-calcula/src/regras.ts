@@ -22,8 +22,8 @@ export interface RegrasEstagio {
 export const ACELERACAO_POR_ACERTO = 0.15;
 
 export const REGRAS_ESTAGIO: Record<Estagio, RegrasEstagio> = {
-  basico: { opcoes: 3, segundosPorConta: 12, velocidadeInicial: 3, velocidadeMaxima: 5 },
-  intermediario: { opcoes: 3, segundosPorConta: 10, velocidadeInicial: 4, velocidadeMaxima: 6 },
+  basico: { opcoes: 3, segundosPorConta: 15, velocidadeInicial: 3, velocidadeMaxima: 5 },
+  intermediario: { opcoes: 3, segundosPorConta: 12, velocidadeInicial: 4, velocidadeMaxima: 6 },
   avancado: { opcoes: 4, segundosPorConta: 9, velocidadeInicial: 5, velocidadeMaxima: 7 },
   mestre: { opcoes: 4, segundosPorConta: 8, velocidadeInicial: 6, velocidadeMaxima: 8 },
 };
