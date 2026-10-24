@@ -255,6 +255,7 @@ a {
 }
 
 .acoes {
+  align-items: center;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;

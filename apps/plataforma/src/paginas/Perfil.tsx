@@ -1,5 +1,6 @@
 import { infoNivel } from '@jogue/progressao';
 import { NOMES_ESTAGIO } from '@jogue/sdk-jogo';
+import { useState } from 'react';
 import { Estrelas } from '../componentes/ui';
 import { habilidadePorId } from '../conteudo/habilidades';
 import { useProgresso } from '../estado/progresso';
@@ -10,6 +11,7 @@ export function Perfil() {
   const { perfil, historico, apagarProgresso } = useProgresso();
   const nivel = infoNivel(perfil.xp);
   const concluidas = historico.filter((r) => r.resumo?.contou);
+  const [confirmando, setConfirmando] = useState(false);
 
   return (
     <div className="pilha">
@@ -63,13 +65,28 @@ export function Perfil() {
         )}
       </section>
 
-      <button
-        type="button"
-        className="botao perigo"
-        onClick={() => window.confirm('Apagar todo o progresso deste aparelho?') && apagarProgresso()}
-      >
-        Apagar progresso
-      </button>
+      {confirmando ? (
+        <div className="acoes">
+          <span>Apagar todo o progresso deste aparelho?</span>
+          <button
+            type="button"
+            className="botao perigo"
+            onClick={() => {
+              apagarProgresso();
+              setConfirmando(false);
+            }}
+          >
+            Sim, apagar
+          </button>
+          <button type="button" className="botao secundario" onClick={() => setConfirmando(false)}>
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="botao perigo" onClick={() => setConfirmando(true)}>
+          Apagar progresso
+        </button>
+      )}
       <p className="suave">Nesta versão o progresso fica salvo só neste navegador.</p>
     </div>
   );
