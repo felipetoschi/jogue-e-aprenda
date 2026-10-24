@@ -1,10 +1,28 @@
 import { ESTAGIOS, NOMES_ESTAGIO, PADRAO } from '@jogue/sdk-jogo';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { DemoCobrinha } from '../componentes/DemoCobrinha';
 import { InstalarApp } from '../componentes/InstalarApp';
 import { MATERIAS, materiaPorId } from '@jogue/conteudo';
 import { JOGOS } from '../conteudo/jogos';
 
+/** Troca a palavra destacada de tempos em tempos. Leitores de tela ouvem a frase inteira, sem troca. */
+function PalavraGirando({ palavras }: { palavras: string[] }) {
+  const [indice, setIndice] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const id = setInterval(() => setIndice((i) => (i + 1) % palavras.length), 2200);
+    return () => clearInterval(id);
+  }, [palavras.length]);
+  return (
+    <>
+      <span className="so-leitor">{`${palavras.slice(0, -1).join(', ')} e ${palavras.at(-1)}`}</span>
+      <span key={indice} className="palavra-girando" aria-hidden="true">
+        {palavras[indice]}
+      </span>
+    </>
+  );
+}
 
 /** O que é o Jogue e Aprenda: página de entrada para quem chega e página "Sobre" para quem já joga. */
 export function Apresentacao() {
@@ -13,9 +31,15 @@ export function Apresentacao() {
     <div className="apresentacao">
       <section className="heroi">
         <div className="heroi-texto">
-          <p className="sobretitulo">Jogos que ensinam</p>
-          <h1>Cada partida é um passo na sua evolução.</h1>
-          <p className="heroi-sub">Puzzles e tabuleiros de matemática, português e mais. Seu progresso vale em todos os jogos.</p>
+          <h1 className="pergunta">
+            O que é o <span className="marca-texto">Jogue e Aprenda</span>?
+          </h1>
+          <p className="resposta">
+            É um lugar para <PalavraGirando palavras={['se divertir', 'aprender', 'se desafiar', 'evoluir']} />.
+          </p>
+          <p className="heroi-sub">
+            Jogos de verdade, em que cada jogada pede o que você sabe. Para jovens e adultos.
+          </p>
           <div className="acoes">
             <Link className="botao grande" to="/jogos">
               Escolher um jogo
@@ -27,6 +51,32 @@ export function Apresentacao() {
           <InstalarApp />
         </div>
         <DemoCobrinha />
+      </section>
+
+      <p className="equacao">
+        <span className="termo termo-diversao">Diversão</span>
+        <span className="operador">+</span>
+        <span className="termo termo-aprendizado">Aprendizado</span>
+        <span className="operador">=</span>
+        <span className="termo termo-resultado">Jogue e Aprenda</span>
+      </p>
+
+      <section className="secao" aria-labelledby="para-quem">
+        <h2 id="para-quem">Para quem é?</h2>
+        <div className="publicos">
+          <article className="publico publico-jovens">
+            <h3>Jovens</h3>
+            <p>A matéria da escola sem cara de lição.</p>
+          </article>
+          <article className="publico publico-adultos">
+            <h3>Adultos</h3>
+            <p>Relembre o que esqueceu, no seu ritmo.</p>
+          </article>
+          <article className="publico publico-todos">
+            <h3>Todo mundo</h3>
+            <p>Partidas curtas, no celular ou no PC.</p>
+          </article>
+        </div>
       </section>
 
       <section className="secao" aria-labelledby="como-funciona">

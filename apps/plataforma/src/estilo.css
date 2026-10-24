@@ -580,6 +580,128 @@ td .estrelas {
   color: var(--tinta-suave);
 }
 
+/* A pergunta que abre a plataforma, com o nome em verde sublinhado por um traço de marca-texto. */
+.pergunta {
+  font-size: clamp(38px, 7vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.marca-texto {
+  color: var(--verde-forte);
+  background: linear-gradient(transparent 62%, var(--verde-suave) 62%);
+  padding: 0 0.06em;
+}
+
+.resposta {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(22px, 3.4vw, 30px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.palavra-girando {
+  display: inline-block;
+  padding: 0 0.3em;
+  border-radius: 10px;
+  background: var(--peca-amarela);
+  color: #121a33;
+  animation: palavra-entra 0.35s ease-out;
+}
+
+@keyframes palavra-entra {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+  }
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Diversão + Aprendizado = Jogue e Aprenda, como uma conta (o primeiro jogo é de matemática). */
+.equacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  padding: 28px 16px;
+  border-radius: 22px;
+  background: var(--demo-fundo);
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: clamp(20px, 4vw, 34px);
+  text-align: center;
+}
+
+.termo {
+  padding: 6px 16px;
+  border-radius: 12px;
+  color: #ffffff;
+}
+
+.termo-diversao {
+  background: #2f6fe4;
+}
+
+.termo-aprendizado {
+  background: #e8553e;
+}
+
+.termo-resultado {
+  background: #22a35f;
+}
+
+.operador {
+  color: #f2b705;
+}
+
+.publicos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .publicos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.publico {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-top: 6px solid var(--cor-publico);
+}
+
+.publico p {
+  color: var(--tinta-suave);
+}
+
+.publico-jovens {
+  --cor-publico: var(--peca-azul);
+}
+
+.publico-adultos {
+  --cor-publico: var(--peca-coral);
+}
+
+.publico-todos {
+  --cor-publico: var(--peca-amarela);
+}
+
 @media (max-width: 820px) {
   .heroi {
     grid-template-columns: minmax(0, 1fr);
@@ -854,13 +976,16 @@ td .estrelas {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .palavra-girando {
+    animation: none;
+  }
   .barra-preenchida,
   .botao {
     transition: none;
   }
 }
 
-/* ---------- Faixa de progresso no início ---------- */
+/* ---------- Faixa de progresso (topo da aba Progresso) ---------- */
 
 .faixa-progresso {
   display: flex;

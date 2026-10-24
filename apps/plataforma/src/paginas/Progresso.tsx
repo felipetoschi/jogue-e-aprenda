@@ -1,8 +1,9 @@
 import { HABILIDADES, habilidadePorId, habilidadesDaMateria, MATERIAS, type Habilidade } from '@jogue/conteudo';
-import { estadoDe, infoNivel, prerequisitosPendentes, progressoMateria, revisaoVencida } from '@jogue/progressao';
+import { estadoDe, prerequisitosPendentes, progressoMateria, revisaoVencida } from '@jogue/progressao';
 import { NOMES_ESTAGIO, PADRAO } from '@jogue/sdk-jogo';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { FaixaProgresso } from '../componentes/FaixaProgresso';
 import { linkParaEscolher } from '../componentes/links';
 import { Barra, Estrelas, SeloEstagio, SeloMateria } from '../componentes/ui';
 import type { RegistroPartida } from '../dados/armazenamento';
@@ -36,7 +37,6 @@ const formatoData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeS
 /** Todo o progresso do jogador num lugar só: nível, disciplinas, erros, histórico. */
 export function Progresso() {
   const { perfil, historico, apagarProgresso } = useProgresso();
-  const nivel = infoNivel(perfil.xp);
   const concluidas = historico.filter((r) => r.resumo?.contou);
   const [confirmando, setConfirmando] = useState(false);
   const errosComuns = contarErros(historico);
@@ -45,11 +45,8 @@ export function Progresso() {
   return (
     <div className="pilha">
       <h1>Progresso</h1>
+      <FaixaProgresso />
       <section className="cartao numeros">
-        <div>
-          <strong>{nivel.nivel}</strong>
-          <span>nível · {nivel.titulo}</span>
-        </div>
         <div>
           <strong>{perfil.xp}</strong>
           <span>XP</span>

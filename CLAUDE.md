@@ -46,9 +46,10 @@ npm run build      # gera dist/ (plataforma + jogos)
   conta como tentativa. Ao errar, o jogo mostra a pergunta resolvida e a explicação do erro.
 - **Escolha de nível:** no card do jogo (página Jogos), níveis lado a lado, com o mais alto já alcançado
   sempre selecionado; dá para escolher um anterior (vale XP, não muda a maestria do atual).
-- **Menu:** Início (apresentação da plataforma), Jogos (um card por jogo, com ícone), Progresso (todo o
-  progresso do jogador: nível, disciplinas, erros, histórico).
-- O progresso fica salvo no navegador (`localStorage`) por enquanto; ainda não há contas nem servidor.
+- **Menu:** Início (só a apresentação, abrindo com "O que é o Jogue e Aprenda?"), Jogos (um card por jogo,
+  com ícone), Progresso (no topo, nível e o botão Continuar; depois disciplinas, erros, histórico).
+- O progresso fica salvo no navegador (`localStorage`) por enquanto; ainda não há contas nem servidor Login com Google
+  ou Facebook está planejado (anotado no plano), ainda sem implementação.
 
 ## Cobrinha que Calcula (primeiro jogo)
 

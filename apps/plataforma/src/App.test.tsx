@@ -26,19 +26,30 @@ const perfilNoIntermediario = () =>
 describe('plataforma', () => {
   it('abre explicando a plataforma e leva à escolha de jogo', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Cada partida é um passo na sua evolução.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'O que é o Jogue e Aprenda?' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Para quem é?' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Escolher um jogo' })).toHaveAttribute('href', '#/jogos');
     expect(screen.getByRole('link', { name: 'Ver meu progresso' })).toHaveAttribute('href', '#/progresso');
   });
 
-  it('mostra o nível e o botão Continuar depois da primeira partida', () => {
+  it('continua de onde parou no topo de Progresso, e não no início', () => {
     localStorage.setItem(
       'jogue-e-aprenda:historico',
       JSON.stringify([{ id: 'x', jogoId: 'cobrinha-que-calcula', data: new Date().toISOString(), config: {}, resultado: null, resumo: { contou: true } }]),
     );
     render(<App />);
+    expect(screen.queryByRole('link', { name: 'Continuar' })).toBeNull();
+    cleanup();
+    window.location.hash = '#/progresso';
+    render(<App />);
     expect(screen.getByText('Nível 1')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Continuar' })).toBeInTheDocument();
+  });
+
+  it('em Progresso, quem nunca jogou vê Começar', () => {
+    window.location.hash = '#/progresso';
+    render(<App />);
+    expect(screen.getByRole('link', { name: 'Começar' })).toBeInTheDocument();
   });
 
   it('reúne todo o progresso numa aba, por disciplina e sem depender de um jogo', () => {
