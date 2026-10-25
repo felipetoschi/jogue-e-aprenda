@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guerra de Bandeiras</title>
+<meta name="description" content="Batalha automática de bandeiras: quem será o vencedor?">
+<style>
+  :root {
+    --fundo: #0b1020;
+    --painel: #151c33;
+    --texto: #f2f4ff;
+    --suave: #9aa3c7;
+    --destaque: #ffd23f;
+    --borda: #2a3459;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fundo); color: var(--texto); }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 16px 24px;
+  }
+  .pergunta {
+    width: 100%; max-width: 640px;
+    text-align: center;
+    background: linear-gradient(135deg, #ff3d6e, #ff8a00 50%, #ffd23f);
+    color: #1a0b00;
+    border-radius: 18px;
+    padding: 12px 10px;
+    box-shadow: 0 6px 30px rgba(255, 138, 0, .35);
+    animation: pulsar 1.6s ease-in-out infinite;
+  }
+  .pergunta .principal { font-size: clamp(26px, 7vw, 42px); font-weight: 900; line-height: 1.1; }
+  .pergunta .outras {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px;
+    font-size: clamp(16px, 4.4vw, 22px); font-weight: 800; margin-top: 4px;
+  }
+  @keyframes pulsar { 50% { transform: scale(1.025); } }
+  .palco { position: relative; width: 100%; max-width: 640px; margin-top: 12px; }
+  canvas { display: block; width: 100%; aspect-ratio: 1; touch-action: manipulation; }
+  .restam {
+    position: absolute; top: 6px; left: 8px;
+    font-size: 14px; font-weight: 700; color: var(--suave);
+  }
+  .som {
+    position: absolute; top: 4px; right: 4px;
+    background: var(--painel); color: var(--texto);
+    border: 1px solid var(--borda); border-radius: 999px;
+    font-size: 15px; font-weight: 700; padding: 8px 12px; cursor: pointer;
+  }
+  .vencedor {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; pointer-events: none;
+  }
+  .vencedor.visivel { display: flex; animation: surgir .6s ease-out; }
+  .vencedor .caixa {
+    background: rgba(11, 16, 32, .85); border: 2px solid var(--destaque);
+    border-radius: 18px; padding: 14px 20px; pointer-events: auto;
+  }
+  .vencedor .titulo { font-size: clamp(14px, 3.8vw, 18px); color: var(--destaque); font-weight: 800; }
+  .vencedor .nome { font-size: clamp(30px, 9vw, 52px); font-weight: 900; margin: 4px 0 10px; }
+  .vencedor button {
+    background: var(--destaque); color: #1a0b00; border: 0; border-radius: 999px;
+    font-size: 16px; font-weight: 800; padding: 10px 18px; cursor: pointer;
+  }
+  @keyframes surgir { from { opacity: 0; transform: scale(.8); } }
+  .placar {
+    width: 100%; max-width: 640px; margin-top: 14px;
+    background: var(--painel); border: 1px solid var(--borda); border-radius: 16px; padding: 12px;
+  }
+  .placar h2 { margin: 0 0 8px; font-size: 17px; display: flex; justify-content: space-between; }
+  .placar h2 span { color: var(--suave); font-weight: 600; font-size: 14px; }
+  .lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+  .item {
+    display: flex; align-items: center; gap: 8px;
+    background: #0f1529; border-radius: 10px; padding: 6px 8px; font-size: 14px;
+  }
+  .item.atual { outline: 2px solid var(--destaque); }
+  .item canvas { width: 28px; height: 20px; aspect-ratio: auto; border-radius: 3px; flex: none; }
+  .item .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item b { color: var(--destaque); font-size: 16px; }
+</style>
+</head>
+<body>
+  <div class="pergunta">
+    <div class="principal">Quem será o vencedor?</div>
+    <div class="outras">
+      <span>Who will be the winner?</span>
+      <span>¿Quién será el ganador?</span>
+      <span>谁会是赢家？</span>
+    </div>
+  </div>
+
+  <div class="palco">
+    <canvas id="arena" width="600" height="600"></canvas>
+    <div class="restam" id="restam"></div>
+    <button class="som" id="som">🔇 Som</button>
+    <div class="vencedor" id="vencedor">
+      <div class="caixa">
+        <div class="titulo">🏆 Vencedor · Winner · Ganador · 获胜者</div>
+        <div class="nome" id="nomeVencedor"></div>
+        <button onclick="location.reload()">↻ Nova batalha</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="placar">
+    <h2>Vitórias <span id="totalBatalhas"></span></h2>
+    <div class="lista" id="lista"></div>
+  </div>
+
+<script>
+'use strict';
+
+// ---------- Bandeiras (desenhadas no canvas, centradas em 0,0) ----------
+function faixasH(ctx, w, h, cores, pesos) {
+  const total = (pesos || cores.map(() => 1)).reduce((a, b) => a + b, 0);
+  let y = -h / 2;
+  cores.forEach((cor, i) => {
+    const alt = h * (pesos ? pesos[i] : 1) / total;
+    ctx.fillStyle = cor; ctx.fillRect(-w / 2, y, w, alt + 0.5); y += alt;
+  });
+}
+function faixasV(ctx, w, h, cores) {
+  const larg = w / cores.length;
+  cores.forEach((cor, i) => { ctx.fillStyle = cor; ctx.fillRect(-w / 2 + i * larg, -h / 2, larg + 0.5, h); });
+}
+function circulo(ctx, x, y, r, cor) {
+  ctx.fillStyle = cor; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+}
+function estrela(ctx, x, y, r, cor, giro = 0) {
+  ctx.fillStyle = cor; ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = giro - Math.PI / 2 + i * Math.PI / 5;
+    const raio = i % 2 ? r * 0.4 : r;
+    ctx.lineTo(x + Math.cos(a) * raio, y + Math.sin(a) * raio);
+  }
+  ctx.closePath(); ctx.fill();
+}
+
+const PAISES = [
+  { id: 'br', nome: 'Brasil', cores: ['#009c3b', '#ffdf00', '#002776'], desenhar(c, w, h) {
+    c.fillStyle = '#009c3b'; c.fillRect(-w / 2, -h / 2, w, h);
+    c.fillStyle = '#ffdf00'; c.beginPath();
+    c.moveTo(0, -h * 0.42); c.lineTo(w * 0.43, 0); c.lineTo(0, h * 0.42); c.lineTo(-w * 0.43, 0); c.fill();
+    circulo(c, 0, 0, h * 0.24, '#002776');
+    c.strokeStyle = '#fff'; c.lineWidth = h * 0.04; c.beginPath(); c.arc(0, h * 0.5, h * 0.55, -2.05, -1.09); c.stroke();
+  } },
+  { id: 'ar', nome: 'Argentina', cores: ['#74acdf', '#fff', '#f6b40e'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#74acdf', '#fff', '#74acdf']); circulo(c, 0, 0, h * 0.11, '#f6b40e');
+  } },
+  { id: 'pt', nome: 'Portugal', cores: ['#006600', '#ff0000', '#ffcc00'], desenhar(c, w, h) {
+    c.fillStyle = '#ff0000'; c.fillRect(-w / 2, -h / 2, w, h);
+    c.fillStyle = '#006600'; c.fillRect(-w / 2, -h / 2, w * 0.4, h);
+    circulo(c, -w * 0.1, 0, h * 0.22, '#ffcc00');
+    c.fillStyle = '#fff'; c.fillRect(-w * 0.1 - h * 0.1, -h * 0.12, h * 0.2, h * 0.22);
+    c.fillStyle = '#ff0000'; c.fillRect(-w * 0.1 - h * 0.07, -h * 0.09, h * 0.14, h * 0.16);
+  } },
+  { id: 'es', nome: 'Espanha', cores: ['#aa151b', '#f1bf00'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#aa151b', '#f1bf00', '#aa151b'], [1, 2, 1]);
+  } },
+  { id: 'fr', nome: 'França', cores: ['#0055a4', '#fff', '#ef4135'], desenhar(c, w, h) {
+    faixasV(c, w, h, ['#0055a4', '#fff', '#ef4135']);
+  } },
+  { id: 'it', nome: 'Itália', cores: ['#009246', '#fff', '#ce2b37'], desenhar(c, w, h) {
+    faixasV(c, w, h, ['#009246', '#fff', '#ce2b37']);
+  } },
+  { id: 'de', nome: 'Alemanha', cores: ['#000', '#dd0000', '#ffce00'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#000', '#dd0000', '#ffce00']);
+  } },
+  { id: 'jp', nome: 'Japão', cores: ['#fff', '#bc002d'], desenhar(c, w, h) {
+    c.fillStyle = '#fff'; c.fillRect(-w / 2, -h / 2, w, h); circulo(c, 0, 0, h * 0.3, '#bc002d');
+  } },
+  { id: 'us', nome: 'EUA', cores: ['#b22234', '#fff', '#3c3b6e'], desenhar(c, w, h) {
+    faixasH(c, w, h, Array.from({ length: 13 }, (_, i) => (i % 2 ? '#fff' : '#b22234')));
+    const cw = w * 0.42, ch = h * 7 / 13;
+    c.fillStyle = '#3c3b6e'; c.fillRect(-w / 2, -h / 2, cw, ch);
+    for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++)
+      circulo(c, -w / 2 + cw * (i + 0.5) / 5, -h / 2 + ch * (j + 0.5) / 4, h * 0.022, '#fff');
+  } },
+  { id: 'cn', nome: 'China', cores: ['#de2910', '#ffde00'], desenhar(c, w, h) {
+    c.fillStyle = '#de2910'; c.fillRect(-w / 2, -h / 2, w, h);
+    const x = -w * 0.3, y = -h * 0.22;
+    estrela(c, x, y, h * 0.17, '#ffde00');
+    [[0.2, -0.3], [0.3, -0.12], [0.3, 0.12], [0.2, 0.3]].forEach(([dx, dy]) =>
+      estrela(c, x + dx * h, y + dy * h * 0.9, h * 0.06, '#ffde00', Math.atan2(-dy, -dx)));
+  } },
+  { id: 'mx', nome: 'México', cores: ['#006847', '#fff', '#ce1126'], desenhar(c, w, h) {
+    faixasV(c, w, h, ['#006847', '#fff', '#ce1126']);
+    circulo(c, 0, 0, h * 0.13, '#8c5a2b'); circulo(c, 0, h * 0.04, h * 0.07, '#4f7d2a');
+  } },
+  { id: 'co', nome: 'Colômbia', cores: ['#fcd116', '#003893', '#ce1126'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#fcd116', '#003893', '#ce1126'], [2, 1, 1]);
+  } },
+  { id: 'cl', nome: 'Chile', cores: ['#fff', '#d52b1e', '#0039a6'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#fff', '#d52b1e']);
+    c.fillStyle = '#0039a6'; c.fillRect(-w / 2, -h / 2, w / 3, h / 2);
+    estrela(c, -w / 2 + w / 6, -h / 4, h * 0.13, '#fff');
+  } },
+  { id: 'ua', nome: 'Ucrânia', cores: ['#0057b7', '#ffd700'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#0057b7', '#ffd700']);
+  } },
+  { id: 'in', nome: 'Índia', cores: ['#ff9933', '#fff', '#138808'], desenhar(c, w, h) {
+    faixasH(c, w, h, ['#ff9933', '#fff', '#138808']);
+    c.strokeStyle = '#000080'; c.lineWidth = h * 0.03;
+    c.beginPath(); c.arc(0, 0, h * 0.12, 0, Math.PI * 2); c.stroke();
+    for (let i = 0; i < 12; i++) {
+      const a = i * Math.PI / 6;
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * h * 0.12, Math.sin(a) * h * 0.12); c.stroke();
+    }
+  } },
+  { id: 'gb', nome: 'Reino Unido', cores: ['#012169', '#fff', '#c8102e'], desenhar(c, w, h) {
+    c.fillStyle = '#012169'; c.fillRect(-w / 2, -h / 2, w, h);
+    c.lineCap = 'butt';
+    const diag = (cor, esp) => {
+      c.strokeStyle = cor; c.lineWidth = esp; c.beginPath();
+      c.moveTo(-w / 2, -h / 2); c.lineTo(w / 2, h / 2); c.moveTo(w / 2, -h / 2); c.lineTo(-w / 2, h / 2); c.stroke();
+    };
+    diag('#fff', h * 0.2); diag('#c8102e', h * 0.07);
+    c.fillStyle = '#fff'; c.fillRect(-w / 2, -h * 0.17, w, h * 0.34); c.fillRect(-h * 0.17, -h / 2, h * 0.34, h);
+    c.fillStyle = '#c8102e'; c.fillRect(-w / 2, -h * 0.1, w, h * 0.2); c.fillRect(-h * 0.1, -h / 2, h * 0.2, h);
+  } },
+];
+
+// ---------- Placar (salvo no navegador) ----------
+const CHAVE = 'guerraDeBandeiras.vitorias';
+function lerPlacar() {
+  try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch { return {}; }
+}
+function salvarPlacar(placar) {
+  try { localStorage.setItem(CHAVE, JSON.stringify(placar)); } catch {}
+}
+function mostrarPlacar(vencedorId) {
+  const placar = lerPlacar();
+  const total = Object.values(placar).reduce((a, b) => a + b, 0);
+  document.getElementById('totalBatalhas').textContent = `${total} batalha${total === 1 ? '' : 's'}`;
+  const lista = document.getElementById('lista');
+  lista.innerHTML = '';
+  [...PAISES]
+    .sort((a, b) => (placar[b.id] || 0) - (placar[a.id] || 0) || a.nome.localeCompare(b.nome))
+    .forEach((p) => {
+      const item = document.createElement('div');
+      item.className = 'item' + (p.id === vencedorId ? ' atual' : '');
+      const mini = document.createElement('canvas');
+      mini.width = 56; mini.height = 40;
+      const c = mini.getContext('2d');
+      c.translate(28, 20); p.desenhar(c, 56, 40);
+      const nome = document.createElement('span'); nome.className = 'n'; nome.textContent = p.nome;
+      const n = document.createElement('b'); n.textContent = placar[p.id] || 0;
+      item.append(mini, nome, n);
+      lista.append(item);
+    });
+}
+
+// ---------- Som (gerado no navegador, em loop infinito) ----------
+const som = { ctx: null, mestre: null, ligado: false, proxima: 0, passo: 0, ultimoToque: 0 };
+const NOTA = (n) => 440 * Math.pow(2, (n - 69) / 12);
+// Lá menor, Fá, Dó, Sol — arpejo animado de batalha.
+const ACORDES = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]];
+const TEMPO = 0.13; // segundos por passo (colcheia)
+
+function tocar(freq, inicio, dur, tipo, vol, destino) {
+  const o = som.ctx.createOscillator(), g = som.ctx.createGain();
+  o.type = tipo; o.frequency.setValueAtTime(freq, inicio);
+  g.gain.setValueAtTime(0.0001, inicio);
+  g.gain.exponentialRampToValueAtTime(vol, inicio + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, inicio + dur);
+  o.connect(g).connect(destino || som.mestre);
+  o.start(inicio); o.stop(inicio + dur + 0.02);
+  return o;
+}
+function agendarMusica() {
+  if (!som.ctx) return;
+  while (som.proxima < som.ctx.currentTime + 0.2) {
+    const t = som.proxima, p = som.passo;
+    const acorde = ACORDES[Math.floor(p / 16) % 4];
+    const arpejo = [0, 1, 2, 1, 0, 2, 1, 2];
+    tocar(NOTA(acorde[arpejo[p % 8]] + 12), t, TEMPO * 0.9, 'square', 0.05);
+    if (p % 4 === 0) tocar(NOTA(acorde[0] - 12), t, TEMPO * 3.5, 'triangle', 0.22);
+    if (p % 8 === 4) tocar(NOTA(acorde[0] - 24), t, 0.12, 'sine', 0.3); // batida
+    if (p % 16 === 14) tocar(NOTA(acorde[2] + 24), t, TEMPO * 1.8, 'triangle', 0.06);
+    som.proxima += TEMPO; som.passo++;
+  }
+}
+function iniciarSom() {
+  if (!som.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    som.ctx = new AC();
+    som.mestre = som.ctx.createGain();
+    som.mestre.gain.value = 0.6;
+    som.mestre.connect(som.ctx.destination);
+    som.proxima = som.ctx.currentTime + 0.05;
+    setInterval(agendarMusica, 50);
+  }
+  som.ctx.resume();
+  som.ligado = true;
+  som.mestre.gain.value = 0.6;
+  botaoSom.textContent = '🔊 Som';
+}
+function desligarSom() {
+  som.ligado = false;
+  if (som.mestre) som.mestre.gain.value = 0;
+  botaoSom.textContent = '🔇 Som';
+}
+function efeitoBatida(forca) {
+  if (!som.ligado) return;
+  const agora = som.ctx.currentTime;
+  if (agora - som.ultimoToque < 0.05) return;
+  som.ultimoToque = agora;
+  tocar(300 + Math.random() * 500 + forca * 2, agora, 0.08, 'sine', 0.18);
+}
+function efeitoEliminacao() {
+  if (!som.ligado) return;
+  const agora = som.ctx.currentTime;
+  const o = tocar(600, agora, 0.45, 'sawtooth', 0.15);
+  o.frequency.exponentialRampToValueAtTime(60, agora + 0.45);
+}
+function efeitoVitoria() {
+  if (!som.ligado) return;
+  const agora = som.ctx.currentTime;
+  [72, 76, 79, 84].forEach((n, i) => tocar(NOTA(n), agora + i * 0.14, 0.5, 'square', 0.12));
+}
+
+const botaoSom = document.getElementById('som');
+botaoSom.addEventListener('click', (e) => {
+  e.stopPropagation();
+  som.ligado ? desligarSom() : iniciarSom();
+});
+// O navegador só deixa tocar som depois do primeiro toque ou tecla.
+const primeiroToque = () => {
+  if (!som.ctx) iniciarSom();
+  window.removeEventListener('pointerdown', primeiroToque);
+  window.removeEventListener('keydown', primeiroToque);
+};
+window.addEventListener('pointerdown', primeiroToque);
+window.addEventListener('keydown', primeiroToque);
+try { iniciarSom(); if (som.ctx.state !== 'running') botaoSom.textContent = '🔇 Toque para som'; } catch {}
+
+// ---------- Batalha ----------
+const canvas = document.getElementById('arena');
+const ctx = canvas.getContext('2d');
+const TAM = 600, CX = 300, CY = 300, RAIO_ARENA = 270;
+const VELOCIDADE_JOGO = Number(new URLSearchParams(location.search).get('vel')) || 1;
+const RAIO_BASE = 30;
+
+const bolas = PAISES.map((p, i) => {
+  const a = (i / PAISES.length) * Math.PI * 2 + Math.random() * 0.3;
+  const d = 90 + Math.random() * 130;
+  const dir = Math.random() * Math.PI * 2, v = 200 + Math.random() * 100;
+  return {
+    pais: p, x: CX + Math.cos(a) * d, y: CY + Math.sin(a) * d,
+    vx: Math.cos(dir) * v, vy: Math.sin(dir) * v,
+    r: RAIO_BASE, vida: 100, angulo: Math.random() * 6, giro: (Math.random() - 0.5) * 6,
+    viva: true, brilho: 0, recarga: 0,
+  };
+});
+const particulas = [];
+let giroArena = 0, tempo = 0, vencedor = null, tremor = 0;
+
+function ajustarTela() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = TAM * dpr; canvas.height = TAM * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+ajustarTela();
+window.addEventListener('resize', ajustarTela);
+
+function explodir(b) {
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 260;
+    particulas.push({
+      x: b.x, y: b.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+      vida: 0.6 + Math.random() * 0.6, cor: b.pais.cores[i % b.pais.cores.length], t: 2 + Math.random() * 4,
+    });
+  }
+  tremor = 8;
+}
+
+function atualizar(dt) {
+  tempo += dt;
+  giroArena += dt * 0.8;
+  const vivas = bolas.filter((b) => b.viva);
+  // As que sobram crescem um pouco, para a batalha não demorar no final.
+  const alvoRaio = RAIO_BASE * (1 + 0.9 * (1 - vivas.length / bolas.length));
+  const furia = 1 + tempo / 50;
+
+  for (const b of vivas) {
+    b.r += (alvoRaio - b.r) * Math.min(1, dt * 2);
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    b.angulo += b.giro * dt;
+    b.brilho = Math.max(0, b.brilho - dt * 4);
+    b.recarga -= dt;
+
+    // Batida na borda que gira: quica e ganha um empurrão no sentido do giro.
+    const dx = b.x - CX, dy = b.y - CY, d = Math.hypot(dx, dy);
+    const limite = RAIO_ARENA - 8 - b.r;
+    if (d > limite) {
+      const nx = dx / d, ny = dy / d;
+      b.x = CX + nx * limite; b.y = CY + ny * limite;
+      const vn = b.vx * nx + b.vy * ny;
+      if (vn > 0) {
+        b.vx -= 2 * vn * nx; b.vy -= 2 * vn * ny;
+        b.vx += -ny * 30; b.vy += nx * 30;
+        // Um desvio para o meio, para não ficar rodando colada na borda.
+        const desvio = (Math.random() - 0.5) * 0.6;
+        const c = Math.cos(desvio), s = Math.sin(desvio);
+        [b.vx, b.vy] = [b.vx * c - b.vy * s, b.vx * s + b.vy * c];
+        b.giro += (Math.random() - 0.5) * 3;
+      }
+    }
+    // Atração pela inimiga mais próxima, mais forte quando sobram poucas.
+    let alvo = null, menor = Infinity;
+    for (const o of vivas) if (o !== b) { const dd = Math.hypot(o.x - b.x, o.y - b.y); if (dd < menor) { menor = dd; alvo = o; } }
+    if (alvo) {
+      const forca = 500 * (1 - vivas.length / bolas.length) * dt / menor;
+      b.vx += (alvo.x - b.x) * forca; b.vy += (alvo.y - b.y) * forca;
+    }
+    // Mantém todas sempre em movimento.
+    const v = Math.hypot(b.vx, b.vy), min = 200 * Math.sqrt(furia), max = 380 * Math.sqrt(furia);
+    if (v < min) { b.vx *= min / v; b.vy *= min / v; }
+    if (v > max) { b.vx *= max / v; b.vy *= max / v; }
+    b.giro = Math.max(-8, Math.min(8, b.giro));
+  }
+
+  // Choques entre bandeiras.
+  for (let i = 0; i < vivas.length; i++) {
+    for (let j = i + 1; j < vivas.length; j++) {
+      const a = vivas[i], b = vivas[j];
+      if (!a.viva || !b.viva) continue;
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01;
+      if (d >= a.r + b.r) continue;
+      const nx = dx / d, ny = dy / d, sobra = (a.r + b.r - d) / 2;
+      a.x -= nx * sobra; a.y -= ny * sobra; b.x += nx * sobra; b.y += ny * sobra;
+      const rel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+      if (rel <= 0) continue;
+      a.vx -= rel * nx; a.vy -= rel * ny; b.vx += rel * nx; b.vy += rel * ny;
+      a.giro += (Math.random() - 0.5) * 6; b.giro += (Math.random() - 0.5) * 6;
+      // Cada uma só perde vida de novo depois de um instante.
+      for (const x of [a, b]) if (x.recarga <= 0) { x.vida -= (1 + Math.random() * 3) * furia; x.recarga = 0.3; }
+      a.brilho = b.brilho = 1;
+      efeitoBatida(rel / 4);
+      for (let k = 0; k < 6; k++) particulas.push({
+        x: a.x + nx * a.r, y: a.y + ny * a.r,
+        vx: (Math.random() - 0.5) * 300, vy: (Math.random() - 0.5) * 300,
+        vida: 0.3, cor: '#fff', t: 2,
+      });
+      // Nunca morrem as duas últimas juntas.
+      const restantes = bolas.filter((x) => x.viva).length;
+      if (restantes === 2 && a.vida <= 0 && b.vida <= 0) (a.vida > b.vida ? a : b).vida = 1;
+      for (const x of [a, b]) if (x.vida <= 0) { x.viva = false; explodir(x); efeitoEliminacao(); }
+    }
+  }
+
+  for (const p of particulas) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; p.vy *= 0.96; p.vida -= dt; }
+  for (let i = particulas.length - 1; i >= 0; i--) if (particulas[i].vida <= 0) particulas.splice(i, 1);
+  tremor = Math.max(0, tremor - dt * 20);
+
+  const agoraVivas = bolas.filter((b) => b.viva);
+  document.getElementById('restam').textContent = `Restam ${agoraVivas.length}`;
+  if (agoraVivas.length === 1 && !vencedor) terminar(agoraVivas[0]);
+}
+
+function terminar(b) {
+  vencedor = b;
+  const placar = lerPlacar();
+  placar[b.pais.id] = (placar[b.pais.id] || 0) + 1;
+  salvarPlacar(placar);
+  mostrarPlacar(b.pais.id);
+  document.getElementById('nomeVencedor').textContent = b.pais.nome;
+  setTimeout(() => document.getElementById('vencedor').classList.add('visivel'), 700);
+  efeitoVitoria();
+  for (let i = 0; i < 4; i++) setTimeout(() => explodir({ x: CX + (Math.random() - 0.5) * 300, y: CY + (Math.random() - 0.5) * 300, pais: b.pais }), 300 + i * 400);
+}
+
+function desenharArena() {
+  // Fundo do círculo.
+  const fundo = ctx.createRadialGradient(CX, CY, 20, CX, CY, RAIO_ARENA);
+  fundo.addColorStop(0, '#1d2650'); fundo.addColorStop(1, '#0d1330');
+  ctx.fillStyle = fundo;
+  ctx.beginPath(); ctx.arc(CX, CY, RAIO_ARENA, 0, Math.PI * 2); ctx.fill();
+  // Anel colorido girando.
+  const partes = 24;
+  ctx.lineWidth = 14;
+  for (let i = 0; i < partes; i++) {
+    const a0 = giroArena + (i / partes) * Math.PI * 2;
+    ctx.strokeStyle = `hsl(${(i * 360) / partes + tempo * 40}, 90%, 58%)`;
+    ctx.beginPath(); ctx.arc(CX, CY, RAIO_ARENA, a0, a0 + (Math.PI * 2) / partes - 0.03); ctx.stroke();
+  }
+  // Raios girando por dentro, para ver o giro.
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 8; i++) {
+    const a = -giroArena * 0.5 + (i * Math.PI) / 4;
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.cos(a) * RAIO_ARENA, CY + Math.sin(a) * RAIO_ARENA); ctx.stroke();
+  }
+}
+
+function desenharBola(b) {
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  if (b === vencedor) { ctx.shadowColor = '#ffd23f'; ctx.shadowBlur = 30 + Math.sin(tempo * 6) * 10; }
+  ctx.beginPath(); ctx.arc(0, 0, b.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(0, 0, b.r - 2, 0, Math.PI * 2); ctx.clip();
+  ctx.rotate(b.angulo);
+  b.pais.desenhar(ctx, b.r * 3, b.r * 2.1);
+  ctx.restore();
+  if (b.brilho > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${b.brilho * 0.5})`;
+    ctx.beginPath(); ctx.arc(0, 0, b.r, 0, Math.PI * 2); ctx.fill();
+  }
+  // Vida em volta da bandeira.
+  const vida = Math.max(0, b.vida) / 100;
+  ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.beginPath(); ctx.arc(0, 0, b.r + 4, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = `hsl(${vida * 120}, 90%, 50%)`;
+  ctx.beginPath(); ctx.arc(0, 0, b.r + 4, -Math.PI / 2, -Math.PI / 2 + vida * Math.PI * 2); ctx.stroke();
+  // Nome.
+  ctx.font = `800 ${Math.round(11 + b.r * 0.12)}px system-ui, sans-serif`;
+  ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.fillStyle = '#fff';
+  ctx.strokeText(b.pais.nome, 0, b.r + 20); ctx.fillText(b.pais.nome, 0, b.r + 20);
+  ctx.restore();
+}
+
+function desenhar() {
+  ctx.clearRect(0, 0, TAM, TAM);
+  ctx.save();
+  if (tremor > 0) ctx.translate((Math.random() - 0.5) * tremor, (Math.random() - 0.5) * tremor);
+  desenharArena();
+  for (const p of particulas) {
+    ctx.globalAlpha = Math.min(1, p.vida * 2);
+    ctx.fillStyle = p.cor; ctx.fillRect(p.x - p.t / 2, p.y - p.t / 2, p.t, p.t);
+  }
+  ctx.globalAlpha = 1;
+  for (const b of bolas) if (b.viva) desenharBola(b);
+  ctx.restore();
+}
+
+let anterior = performance.now();
+function quadro(agora) {
+  let dt = Math.min(0.05, (agora - anterior) / 1000) * VELOCIDADE_JOGO;
+  anterior = agora;
+  // Passos pequenos para os choques ficarem certos.
+  const passos = Math.ceil(dt / 0.008);
+  for (let i = 0; i < passos; i++) atualizar(dt / passos);
+  desenhar();
+  requestAnimationFrame(quadro);
+}
+
+mostrarPlacar(null);
+requestAnimationFrame(quadro);
+</script>
+</body>
+</html>
