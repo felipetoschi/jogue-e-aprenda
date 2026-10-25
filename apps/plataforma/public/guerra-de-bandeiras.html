@@ -144,7 +144,7 @@ function estrela(ctx, x, y, r, cor, giro = 0) {
 }
 
 const PAISES = [
-  { id: 'br', nome: 'Brasil', cores: ['#009c3b', '#ffdf00', '#002776'], desenhar(c, w, h) {
+  { id: 'br', nome: 'Brazil', cores: ['#009c3b', '#ffdf00', '#002776'], desenhar(c, w, h) {
     c.fillStyle = '#009c3b'; c.fillRect(-w / 2, -h / 2, w, h);
     c.fillStyle = '#ffdf00'; c.beginPath();
     c.moveTo(0, -h * 0.42); c.lineTo(w * 0.43, 0); c.lineTo(0, h * 0.42); c.lineTo(-w * 0.43, 0); c.fill();
@@ -161,22 +161,22 @@ const PAISES = [
     c.fillStyle = '#fff'; c.fillRect(-w * 0.1 - h * 0.1, -h * 0.12, h * 0.2, h * 0.22);
     c.fillStyle = '#ff0000'; c.fillRect(-w * 0.1 - h * 0.07, -h * 0.09, h * 0.14, h * 0.16);
   } },
-  { id: 'es', nome: 'Espanha', cores: ['#aa151b', '#f1bf00'], desenhar(c, w, h) {
+  { id: 'es', nome: 'Spain', cores: ['#aa151b', '#f1bf00'], desenhar(c, w, h) {
     faixasH(c, w, h, ['#aa151b', '#f1bf00', '#aa151b'], [1, 2, 1]);
   } },
-  { id: 'fr', nome: 'França', cores: ['#0055a4', '#fff', '#ef4135'], desenhar(c, w, h) {
+  { id: 'fr', nome: 'France', cores: ['#0055a4', '#fff', '#ef4135'], desenhar(c, w, h) {
     faixasV(c, w, h, ['#0055a4', '#fff', '#ef4135']);
   } },
-  { id: 'it', nome: 'Itália', cores: ['#009246', '#fff', '#ce2b37'], desenhar(c, w, h) {
+  { id: 'it', nome: 'Italy', cores: ['#009246', '#fff', '#ce2b37'], desenhar(c, w, h) {
     faixasV(c, w, h, ['#009246', '#fff', '#ce2b37']);
   } },
-  { id: 'de', nome: 'Alemanha', cores: ['#000', '#dd0000', '#ffce00'], desenhar(c, w, h) {
+  { id: 'de', nome: 'Germany', cores: ['#000', '#dd0000', '#ffce00'], desenhar(c, w, h) {
     faixasH(c, w, h, ['#000', '#dd0000', '#ffce00']);
   } },
-  { id: 'jp', nome: 'Japão', cores: ['#fff', '#bc002d'], desenhar(c, w, h) {
+  { id: 'jp', nome: 'Japan', cores: ['#fff', '#bc002d'], desenhar(c, w, h) {
     c.fillStyle = '#fff'; c.fillRect(-w / 2, -h / 2, w, h); circulo(c, 0, 0, h * 0.3, '#bc002d');
   } },
-  { id: 'us', nome: 'EUA', cores: ['#b22234', '#fff', '#3c3b6e'], desenhar(c, w, h) {
+  { id: 'us', nome: 'USA', cores: ['#b22234', '#fff', '#3c3b6e'], desenhar(c, w, h) {
     faixasH(c, w, h, Array.from({ length: 13 }, (_, i) => (i % 2 ? '#fff' : '#b22234')));
     const cw = w * 0.42, ch = h * 7 / 13;
     c.fillStyle = '#3c3b6e'; c.fillRect(-w / 2, -h / 2, cw, ch);
@@ -190,11 +190,11 @@ const PAISES = [
     [[0.2, -0.3], [0.3, -0.12], [0.3, 0.12], [0.2, 0.3]].forEach(([dx, dy]) =>
       estrela(c, x + dx * h, y + dy * h * 0.9, h * 0.06, '#ffde00', Math.atan2(-dy, -dx)));
   } },
-  { id: 'mx', nome: 'México', cores: ['#006847', '#fff', '#ce1126'], desenhar(c, w, h) {
+  { id: 'mx', nome: 'Mexico', cores: ['#006847', '#fff', '#ce1126'], desenhar(c, w, h) {
     faixasV(c, w, h, ['#006847', '#fff', '#ce1126']);
     circulo(c, 0, 0, h * 0.13, '#8c5a2b'); circulo(c, 0, h * 0.04, h * 0.07, '#4f7d2a');
   } },
-  { id: 'co', nome: 'Colômbia', cores: ['#fcd116', '#003893', '#ce1126'], desenhar(c, w, h) {
+  { id: 'co', nome: 'Colombia', cores: ['#fcd116', '#003893', '#ce1126'], desenhar(c, w, h) {
     faixasH(c, w, h, ['#fcd116', '#003893', '#ce1126'], [2, 1, 1]);
   } },
   { id: 'cl', nome: 'Chile', cores: ['#fff', '#d52b1e', '#0039a6'], desenhar(c, w, h) {
@@ -202,10 +202,10 @@ const PAISES = [
     c.fillStyle = '#0039a6'; c.fillRect(-w / 2, -h / 2, w / 3, h / 2);
     estrela(c, -w / 2 + w / 6, -h / 4, h * 0.13, '#fff');
   } },
-  { id: 'ua', nome: 'Ucrânia', cores: ['#0057b7', '#ffd700'], desenhar(c, w, h) {
+  { id: 'ua', nome: 'Ukraine', cores: ['#0057b7', '#ffd700'], desenhar(c, w, h) {
     faixasH(c, w, h, ['#0057b7', '#ffd700']);
   } },
-  { id: 'in', nome: 'Índia', cores: ['#ff9933', '#fff', '#138808'], desenhar(c, w, h) {
+  { id: 'in', nome: 'India', cores: ['#ff9933', '#fff', '#138808'], desenhar(c, w, h) {
     faixasH(c, w, h, ['#ff9933', '#fff', '#138808']);
     c.strokeStyle = '#000080'; c.lineWidth = h * 0.03;
     c.beginPath(); c.arc(0, 0, h * 0.12, 0, Math.PI * 2); c.stroke();
@@ -214,7 +214,7 @@ const PAISES = [
       c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * h * 0.12, Math.sin(a) * h * 0.12); c.stroke();
     }
   } },
-  { id: 'gb', nome: 'Reino Unido', cores: ['#012169', '#fff', '#c8102e'], desenhar(c, w, h) {
+  { id: 'gb', nome: 'United Kingdom', cores: ['#012169', '#fff', '#c8102e'], desenhar(c, w, h) {
     c.fillStyle = '#012169'; c.fillRect(-w / 2, -h / 2, w, h);
     c.lineCap = 'butt';
     const diag = (cor, esp) => {
@@ -544,10 +544,6 @@ function desenharBola(b) {
   ctx.beginPath(); ctx.arc(0, 0, b.r + 4, 0, Math.PI * 2); ctx.stroke();
   ctx.strokeStyle = `hsl(${vida * 120}, 90%, 50%)`;
   ctx.beginPath(); ctx.arc(0, 0, b.r + 4, -Math.PI / 2, -Math.PI / 2 + vida * Math.PI * 2); ctx.stroke();
-  // Nome.
-  ctx.font = `800 ${Math.round(11 + b.r * 0.12)}px system-ui, sans-serif`;
-  ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.fillStyle = '#fff';
-  ctx.strokeText(b.pais.nome, 0, b.r + 20); ctx.fillText(b.pais.nome, 0, b.r + 20);
   ctx.restore();
 }
 
