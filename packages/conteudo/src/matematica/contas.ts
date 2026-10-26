@@ -8,9 +8,7 @@ export type TipoErro =
   | 'operacao-trocada'
   | 'digitos-invertidos'
   | 'sem-reserva'
-  | 'ordem-operacoes'
-  | 'sinal-trocado'
-  | 'parcela-esquecida';
+  | 'sinal-trocado';
 
 export interface Opcao {
   valor: number;
@@ -235,59 +233,11 @@ function divisao(estagio: Estagio, ajuste: number, rng: Rng): ContaBruta {
   return { texto: `${dividendo} ÷ ${divisor}`, resposta, candidatos };
 }
 
-function expressoes(estagio: Estagio, ajuste: number, rng: Rng): ContaBruta {
-  switch (estagio) {
-    case 'basico': {
-      const a = naFaixa(1, 8, ajuste, rng);
-      const b = inteiro(1, 6, rng);
-      const c = inteiro(1, 6, rng);
-      const candidatos: Candidato[] = [{ valor: a + b, tipo: 'parcela-esquecida' }];
-      return { texto: `${a} + ${b} + ${c}`, resposta: a + b + c, candidatos };
-    }
-    case 'intermediario': {
-      const a = naFaixa(6, 20, ajuste, rng);
-      const b = inteiro(1, a - 1, rng);
-      const c = inteiro(1, 10, rng);
-      const candidatos: Candidato[] = [{ valor: a + b + c, tipo: 'operacao-trocada' }];
-      if (a - b - c >= 0) candidatos.push({ valor: a - b - c, tipo: 'ordem-operacoes' });
-      return { texto: `${a} − ${b} + ${c}`, resposta: a - b + c, candidatos };
-    }
-    case 'avancado': {
-      const a = naFaixa(1, 20, ajuste, rng);
-      const b = inteiro(2, 9, rng);
-      const c = inteiro(2, 9, rng);
-      return {
-        texto: `${a} + ${b} × ${c}`,
-        resposta: a + b * c,
-        candidatos: [
-          { valor: (a + b) * c, tipo: 'ordem-operacoes' },
-          { valor: a + b + c, tipo: 'operacao-trocada' },
-        ],
-      };
-    }
-    case 'mestre': {
-      const a = inteiro(1, 9, rng);
-      const b = inteiro(1, 9, rng);
-      const c = naFaixa(2, 9, ajuste, rng);
-      const d = inteiro(1, 9, rng);
-      return {
-        texto: `(${a} + ${b}) × ${c} − ${d}`,
-        resposta: (a + b) * c - d,
-        candidatos: [
-          { valor: a + b * c - d, tipo: 'ordem-operacoes' },
-          { valor: (a + b) * c + d, tipo: 'operacao-trocada' },
-        ],
-      };
-    }
-  }
-}
-
 const GERADORES: Record<string, (estagio: Estagio, ajuste: number, rng: Rng) => ContaBruta> = {
   adicao,
   subtracao,
   multiplicacao,
   divisao,
-  expressoes,
 };
 
 export const HABILIDADES_SUPORTADAS = Object.keys(GERADORES);
@@ -342,9 +292,7 @@ const ROTULOS_ERRO: Record<TipoErro, string> = {
   'operacao-trocada': 'Operação trocada',
   'digitos-invertidos': 'Dígitos invertidos',
   'sem-reserva': 'Esqueceu o "vai um" ou o empréstimo',
-  'ordem-operacoes': 'Ordem das operações',
   'sinal-trocado': 'Sinal trocado',
-  'parcela-esquecida': 'Esqueceu uma parcela',
 };
 
 /** Explica, numa frase, o erro que a opção escolhida imita. */
@@ -357,9 +305,7 @@ export function explicarErro(conta: Conta, valor: number, tipo: TipoErro): { rot
     'operacao-trocada': `${v} é o resultado de outra operação. ${certa}.`,
     'digitos-invertidos': `${v} tem os algarismos da resposta trocados de lugar. ${certa}.`,
     'sem-reserva': `${v} é o que dá esquecendo o "vai um" ou o empréstimo entre as casas. ${certa}.`,
-    'ordem-operacoes': `${v} é o que dá resolvendo da esquerda para a direita. Parênteses vêm primeiro, depois × e ÷, depois + e −. ${certa}.`,
     'sinal-trocado': `${v} está com o sinal trocado: o número maior está sendo subtraído. ${certa}.`,
-    'parcela-esquecida': `${v} é o que dá somando só as duas primeiras parcelas. ${certa}.`,
   };
   return { rotulo: ROTULOS_ERRO[tipo], explicacao: explicacoes[tipo] };
 }

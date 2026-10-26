@@ -62,7 +62,7 @@ describe('plataforma', () => {
     expect(screen.getByText('0% da disciplina dominada')).toBeInTheDocument();
     // Todas as operações de Matemática ficam abertas desde o início.
     expect(screen.queryByText(/^Falta:/)).toBeNull();
-    expect(screen.getAllByRole('link', { name: 'Treinar' })).toHaveLength(6);
+    expect(screen.getAllByRole('link', { name: 'Treinar' })).toHaveLength(5);
     expect(screen.getAllByRole('link', { name: 'Treinar' })[0]).toHaveAttribute('href', '#/jogos?habilidade=adicao');
     expect(screen.getByText('Português')).toBeInTheDocument();
   });

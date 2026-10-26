@@ -1,4 +1,4 @@
-import type { EstadoJogo, Posicao } from './jogo';
+import type { Direcao, EstadoJogo, Posicao } from './jogo';
 import { ALERTA_ENERGIA, LADO_OPCAO, TAMANHO_TABULEIRO } from './regras';
 
 const cor = (nome: string) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
@@ -12,12 +12,20 @@ interface Efeito {
 /** Duração, em segundos, do anel que marca um acerto ou erro. */
 const DURACAO_EFEITO = 0.45;
 
+/** Para onde a cabeça aponta, para os olhos ficarem na frente. */
+const FRENTE: Record<Direcao, Posicao> = {
+  cima: { x: 0, y: -1 },
+  baixo: { x: 0, y: 1 },
+  esquerda: { x: -1, y: 0 },
+  direita: { x: 1, y: 0 },
+};
+
 export class Desenhista {
   private readonly ctx: CanvasRenderingContext2D;
   private efeitos: Efeito[] = [];
   private readonly reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private casa = 0;
-  private cores = { acerto: '', erro: '', linha: '', cobra: '', cabeca: '', opcao: '', borda: '', texto: '' };
+  private cores = { acerto: '', erro: '', linha: '', cobra: '', cabeca: '', opcao: '', borda: '', texto: '', olho: '' };
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
@@ -30,6 +38,7 @@ export class Desenhista {
       opcao: cor('--opcao'),
       borda: cor('--opcao-borda'),
       texto: cor('--texto'),
+      olho: cor('--fundo'),
     };
     this.redimensionar();
   }
@@ -96,6 +105,7 @@ export class Desenhista {
       ctx.roundRect(parte.x * casa + margem, parte.y * casa + margem, casa - margem * 2, casa - margem * 2, casa * 0.3);
       ctx.fill();
     });
+    this.desenharOlhos(estado.cobra[0]!, estado.direcao);
     ctx.globalAlpha = 1;
 
     this.efeitos = this.efeitos.filter((e) => tempo - e.inicio < DURACAO_EFEITO);
@@ -109,5 +119,19 @@ export class Desenhista {
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
+  }
+
+  /** Dois olhinhos na frente da cabeça mostram para onde a cobra vai. */
+  private desenharOlhos(cabeca: Posicao, direcao: Direcao): void {
+    const { ctx, casa } = this;
+    const frente = FRENTE[direcao];
+    const centroX = (cabeca.x + 0.5) * casa + frente.x * casa * 0.18;
+    const centroY = (cabeca.y + 0.5) * casa + frente.y * casa * 0.18;
+    ctx.fillStyle = this.cores.olho;
+    for (const lado of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(centroX - frente.y * casa * 0.2 * lado, centroY + frente.x * casa * 0.2 * lado, Math.max(1.5, casa * 0.09), 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 }
