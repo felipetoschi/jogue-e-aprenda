@@ -60,7 +60,9 @@ describe('plataforma', () => {
     expect(screen.getByRole('button', { name: 'Apagar progresso' })).toBeInTheDocument();
     expect(screen.getAllByText('Maestria 0 · zere o Básico (20 de 20) para subir').length).toBeGreaterThan(0);
     expect(screen.getByText('0% da disciplina dominada')).toBeInTheDocument();
-    expect(screen.getByText('Falta: Multiplicação — Intermediário')).toBeInTheDocument();
+    // Todas as operações de Matemática ficam abertas desde o início.
+    expect(screen.queryByText(/^Falta:/)).toBeNull();
+    expect(screen.getAllByRole('link', { name: 'Treinar' })).toHaveLength(6);
     expect(screen.getAllByRole('link', { name: 'Treinar' })[0]).toHaveAttribute('href', '#/jogos?habilidade=adicao');
     expect(screen.getByText('Português')).toBeInTheDocument();
   });

@@ -37,3 +37,12 @@ describe('banco de conteúdo', () => {
     expect(gerarQuestoes('multiplicacao', 'mestre', 0, 1, comSemente(5))[0]!.opcoes).toHaveLength(4);
   });
 });
+
+describe('Matemática', () => {
+  it('deixa todas as operações abertas desde o início, começando no Básico', () => {
+    for (const h of HABILIDADES.filter((h) => h.materiaId === 'matematica')) {
+      expect(h.prerequisitos, h.id).toEqual([]);
+      expect(h.estagioInicial, h.id).toBe('basico');
+    }
+  });
+});
