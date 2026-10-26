@@ -1,6 +1,9 @@
 import type { Habilidade } from '../tipos';
 
-/** Árvore de habilidades de Matemática (plano, aba do jogo, "Habilidades e estágios"). */
+/**
+ * Habilidades de Matemática (plano, aba do jogo, "Habilidades e estágios").
+ * Todas abertas desde o início; só os estágios de cada uma sobem um a um.
+ */
 export const HABILIDADES_MATEMATICA: Habilidade[] = [
   {
     id: 'adicao',
@@ -22,7 +25,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     materiaId: 'matematica',
     formato: 'resposta-curta',
     estagioInicial: 'basico',
-    prerequisitos: [{ habilidadeId: 'adicao', estagio: 'intermediario' }],
+    prerequisitos: [],
     estagios: {
       basico: 'Até 10',
       intermediario: 'Até 100, sem empréstimo',
@@ -50,7 +53,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     materiaId: 'matematica',
     formato: 'resposta-curta',
     estagioInicial: 'basico',
-    prerequisitos: [{ habilidadeId: 'multiplicacao', estagio: 'intermediario' }],
+    prerequisitos: [],
     estagios: {
       basico: 'Exata, tabuada do 1 ao 5',
       intermediario: 'Exata, tabuada do 1 ao 10',
@@ -64,7 +67,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     materiaId: 'matematica',
     formato: 'resposta-curta',
     estagioInicial: 'basico',
-    // Aberta desde o início: mistura as quatro operações no nível escolhido.
+    // Mistura as quatro operações no nível escolhido.
     prerequisitos: [],
     estagios: {
       basico: 'As quatro operações, com números pequenos',
@@ -79,12 +82,7 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
     materiaId: 'matematica',
     formato: 'resposta-curta',
     estagioInicial: 'basico',
-    prerequisitos: [
-      { habilidadeId: 'adicao', estagio: 'intermediario' },
-      { habilidadeId: 'subtracao', estagio: 'intermediario' },
-      { habilidadeId: 'multiplicacao', estagio: 'intermediario' },
-      { habilidadeId: 'divisao', estagio: 'intermediario' },
-    ],
+    prerequisitos: [],
     estagios: {
       basico: 'Duas somas seguidas',
       intermediario: 'Duas operações de + e −',

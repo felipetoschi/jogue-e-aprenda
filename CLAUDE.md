@@ -11,6 +11,8 @@ workflow `.github/workflows/pages.yml`). Plano completo: https://claude.ai/artif
 - Celular primeiro: tudo precisa funcionar no celular (toque, setas na tela) e no PC (teclado).
 - Quando o dono pedir para "anotar" ou "deixar planejado", só registre no plano; não mexa no código.
 - Antes de enviar: `npm run typecheck`, `npm test` e `npm run build` precisam passar.
+- Toda mudança pode ser publicada: depois das checagens, abra o pull request para a branch principal
+  (`claude/jogue-aprenda-structure-o6lgo0`) e faça o merge, sem precisar perguntar.
 
 ## Comandos
 
@@ -56,6 +58,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão, Todas as operações, Expressões.
+  Todas abertas desde o início (sem pré-requisito); em cada uma, os estágios sobem um a um ao zerar.
 
 ## Para criar um jogo ou uma disciplina
 
