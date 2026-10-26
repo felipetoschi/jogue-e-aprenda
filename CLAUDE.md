@@ -57,7 +57,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
-- Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão, Todas as operações, Expressões.
+- Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.
   Todas abertas desde o início (sem pré-requisito); em cada uma, os estágios sobem um a um ao zerar.
 
 ## Para criar um jogo ou uma disciplina

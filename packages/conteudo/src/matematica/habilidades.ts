@@ -76,18 +76,4 @@ export const HABILIDADES_MATEMATICA: Habilidade[] = [
       mestre: 'As quatro operações, com decimais',
     },
   },
-  {
-    id: 'expressoes',
-    nome: 'Expressões',
-    materiaId: 'matematica',
-    formato: 'resposta-curta',
-    estagioInicial: 'basico',
-    prerequisitos: [],
-    estagios: {
-      basico: 'Duas somas seguidas',
-      intermediario: 'Duas operações de + e −',
-      avancado: 'Com × e ÷, ordem das operações',
-      mestre: 'Com parênteses',
-    },
-  },
 ];

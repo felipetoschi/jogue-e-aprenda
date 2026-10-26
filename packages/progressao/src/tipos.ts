@@ -9,7 +9,7 @@ export interface DefinicaoHabilidade {
   id: string;
   nome: string;
   materiaId: string;
-  /** Algumas habilidades começam acima do Básico (ex.: Expressões). */
+  /** Uma habilidade pode começar acima do Básico. */
   estagioInicial: Estagio;
   prerequisitos: Prerequisito[];
 }
