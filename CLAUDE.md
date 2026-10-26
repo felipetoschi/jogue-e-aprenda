@@ -11,6 +11,8 @@ workflow `.github/workflows/pages.yml`). Plano completo: https://claude.ai/artif
 - Celular primeiro: tudo precisa funcionar no celular (toque, setas na tela) e no PC (teclado).
 - Quando o dono pedir para "anotar" ou "deixar planejado", só registre no plano; não mexa no código.
 - Antes de enviar: `npm run typecheck`, `npm test` e `npm run build` precisam passar.
+- Toda mudança pode ser publicada: depois das checagens, abra o pull request para a branch principal
+  (`claude/jogue-aprenda-structure-o6lgo0`) e faça o merge, sem precisar perguntar.
 
 ## Comandos
 
