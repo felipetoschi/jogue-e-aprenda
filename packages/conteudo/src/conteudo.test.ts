@@ -1,6 +1,7 @@
 import { ESTAGIOS } from '@jogue/sdk-jogo';
 import { describe, expect, it } from 'vitest';
 import { comSemente } from './aleatorio';
+import { ESTADOS, PAISES } from './geografia/dados';
 import { gerarQuestoes, HABILIDADES, MATERIAS } from './index';
 
 describe('banco de conteúdo', () => {
@@ -69,5 +70,64 @@ describe('Matemática', () => {
       expect(h.prerequisitos, h.id).toEqual([]);
       expect(h.estagioInicial, h.id).toBe('basico');
     }
+  });
+});
+
+describe('Geografia', () => {
+  const geografia = HABILIDADES.filter((h) => h.materiaId === 'geografia');
+
+  it('tem os temas abertos desde o início, começando no Básico', () => {
+    expect(geografia.map((h) => h.id)).toEqual(['estados-capitais', 'regioes-brasil', 'paises-capitais', 'continentes', 'todos-temas-geografia']);
+    for (const h of geografia) {
+      expect(h.prerequisitos, h.id).toEqual([]);
+      expect(h.estagioInicial, h.id).toBe('basico');
+    }
+    expect(MATERIAS.find((m) => m.id === 'geografia')?.disponivel).toBe(true);
+  });
+
+  it('não repete pergunta numa partida de 20, em nenhum tema e estágio', () => {
+    const rng = comSemente(21);
+    for (const h of geografia) {
+      for (const estagio of ESTAGIOS) {
+        for (let partida = 0; partida < 5; partida++) {
+          const questoes = gerarQuestoes(h.id, estagio, 0.5, 20, { alternativas: 2, rng });
+          const chaves = questoes.map((q) => `${q.enunciado}|${q.opcoes.find((o) => o.correta)!.texto}`);
+          expect(new Set(chaves).size, `${h.id} ${estagio}`).toBe(20);
+        }
+      }
+    }
+  });
+
+  it('textos curtos, para caber no celular', () => {
+    const rng = comSemente(8);
+    for (const h of geografia) {
+      for (const estagio of ESTAGIOS) {
+        for (const q of gerarQuestoes(h.id, estagio, 1, 20, { alternativas: 2, rng })) {
+          expect(q.enunciado.length, q.enunciado).toBeLessThanOrEqual(36);
+          for (const o of q.opcoes) expect(o.texto.length, o.texto).toBeLessThanOrEqual(20);
+        }
+      }
+    }
+  });
+
+  it('no Básico de capitais brasileiras, só estados conhecidos', () => {
+    const conhecidos = new Set(ESTADOS.filter((e) => e.fama <= 2).map((e) => e.capital));
+    for (const q of gerarQuestoes('estados-capitais', 'basico', 1, 100, { alternativas: 2, rng: comSemente(2) })) {
+      for (const o of q.opcoes) expect(conhecidos.has(o.texto), o.texto).toBe(true);
+    }
+  });
+
+  it('a pegadinha (cidade famosa) aparece no Mestre de países', () => {
+    const questoes = gerarQuestoes('paises-capitais', 'mestre', 0.5, 200, { alternativas: 2, rng: comSemente(6) });
+    const australia = questoes.find((q) => q.enunciado === 'Capital da Austrália?');
+    expect(australia?.opcoes.map((o) => o.texto).sort()).toEqual(['Camberra', 'Sydney']);
+  });
+
+  it('dados consistentes: 27 unidades, siglas e capitais únicas', () => {
+    expect(ESTADOS).toHaveLength(27);
+    expect(new Set(ESTADOS.map((e) => e.sigla)).size).toBe(27);
+    expect(new Set(ESTADOS.map((e) => e.capital)).size).toBe(27);
+    expect(new Set(PAISES.map((p) => p.capital)).size).toBe(PAISES.length);
+    expect(new Set(PAISES.map((p) => p.nome)).size).toBe(PAISES.length);
   });
 });
