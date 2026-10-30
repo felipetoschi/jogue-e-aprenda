@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { App } from './App';
+import { carregarHistorico } from './dados/armazenamento';
 
 afterEach(() => {
   cleanup();
@@ -35,7 +36,7 @@ describe('plataforma', () => {
   it('continua de onde parou no topo de Progresso, e não no início', () => {
     localStorage.setItem(
       'jogue-e-aprenda:historico',
-      JSON.stringify([{ id: 'x', jogoId: 'cobrinha-que-calcula', data: new Date().toISOString(), config: {}, resultado: null, resumo: { contou: true } }]),
+      JSON.stringify([{ id: 'x', jogoId: 'cobrinha-sabida', data: new Date().toISOString(), config: {}, resultado: null, resumo: { contou: true } }]),
     );
     render(<App />);
     expect(screen.queryByRole('link', { name: 'Continuar' })).toBeNull();
@@ -44,6 +45,14 @@ describe('plataforma', () => {
     render(<App />);
     expect(screen.getByText('Nível 1')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Continuar' })).toBeInTheDocument();
+  });
+
+  it('troca o id antigo da cobrinha no histórico salvo', () => {
+    localStorage.setItem(
+      'jogue-e-aprenda:historico',
+      JSON.stringify([{ id: 'x', jogoId: 'cobrinha-que-calcula', data: new Date().toISOString(), config: {}, resultado: null, resumo: null }]),
+    );
+    expect(carregarHistorico()[0]!.jogoId).toBe('cobrinha-sabida');
   });
 
   it('em Progresso, quem nunca jogou vê Começar', () => {
@@ -101,6 +110,12 @@ describe('plataforma', () => {
     expect(screen.getByRole('radiogroup', { name: 'Nível' })).toBeInTheDocument();
     expect(document.querySelector('iframe')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Começar' }));
-    expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-que-calcula/index.html');
+    expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-sabida/index.html');
+  });
+
+  it('o endereço antigo da cobrinha ainda abre o jogo', () => {
+    window.location.hash = '#/jogar/cobrinha-que-calcula?habilidade=adicao';
+    render(<App />);
+    expect(document.querySelector('iframe')?.getAttribute('src')).toBe('jogos/cobrinha-sabida/index.html');
   });
 });

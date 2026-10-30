@@ -1,5 +1,6 @@
 import { perfilNovo, type PerfilProgresso, type ResumoPartida } from '@jogue/progressao';
 import type { ConfigPartida, ResultadoJogo } from '@jogue/sdk-jogo';
+import { IDS_ANTIGOS } from '../conteudo/jogos';
 
 /**
  * Guarda o progresso no próprio navegador. Na Fase 1 não há servidor:
@@ -42,7 +43,9 @@ export function carregarPerfil(): PerfilProgresso {
 
 export const salvarPerfil = (perfil: PerfilProgresso) => gravar(CHAVE_PERFIL, perfil);
 
-export const carregarHistorico = (): RegistroPartida[] => ler<RegistroPartida[]>(CHAVE_HISTORICO) ?? [];
+/** Lê o histórico já trocando o id de jogos renomeados pelo atual. */
+export const carregarHistorico = (): RegistroPartida[] =>
+  (ler<RegistroPartida[]>(CHAVE_HISTORICO) ?? []).map((r) => (IDS_ANTIGOS[r.jogoId] ? { ...r, jogoId: IDS_ANTIGOS[r.jogoId]! } : r));
 
 export function salvarHistorico(historico: RegistroPartida[]): RegistroPartida[] {
   const cortado = historico.slice(0, MAX_HISTORICO);

@@ -29,7 +29,7 @@ aplica a progressão (@jogue/progressao), salva, mostra a tela de resultado
 ```
 dist/index.html                              plataforma
 dist/assets/...                              código da plataforma
-dist/jogos/cobrinha-que-calcula/index.html   jogo, baixado só ao abrir a partida
+dist/jogos/cobrinha-sabida/index.html   jogo, baixado só ao abrir a partida
 ```
 
 Todos os caminhos são relativos e as rotas usam `#`, então o `dist/` funciona em qualquer hospedagem estática.

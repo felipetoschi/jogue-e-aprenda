@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@jogue/conteudo": "*",
-    "@jogue/jogo-cobrinha-que-calcula": "*",
+    "@jogue/jogo-cobrinha-sabida": "*",
     "@jogue/progressao": "*",
     "@jogue/sdk-jogo": "*",
     "react": "^19.3.1",
