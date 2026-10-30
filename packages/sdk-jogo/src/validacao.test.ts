@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validarResultado } from './validacao';
 import type { ConfigPartida, ResultadoJogo } from './contrato';
 
-const questao = { habilidadeId: 'multiplicacao', enunciado: '2 × 3 = ?', resolucao: '2 × 3 = 6', opcoes: [{ texto: '6', correta: true }] };
+const questao = { habilidadeId: 'multiplicacao', enunciado: '2 × 3 = ?', resolucao: '2 × 3 = 6', opcoes: [{ letra: 'A' as const, texto: '6', correta: true }] };
 const config: ConfigPartida = {
   partidaId: 'p1',
   habilidadeId: 'multiplicacao',

@@ -1,7 +1,11 @@
+import type { Letra } from '@jogue/sdk-jogo';
 import type { Direcao, EstadoJogo, Posicao } from './jogo';
 import { ALERTA_ENERGIA, LADO_OPCAO, TAMANHO_TABULEIRO } from './regras';
 
 const cor = (nome: string) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+
+/** Variável de CSS com a cor da letra, a mesma no tabuleiro e ao lado da pergunta. */
+export const corDaLetra = (letra: Letra) => `--letra-${letra.toLowerCase()}`;
 
 interface Efeito {
   pos: Posicao;
@@ -25,7 +29,8 @@ export class Desenhista {
   private efeitos: Efeito[] = [];
   private readonly reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private casa = 0;
-  private cores = { acerto: '', erro: '', linha: '', cobra: '', cabeca: '', opcao: '', borda: '', texto: '', olho: '' };
+  private readonly coresLetra = new Map<Letra, string>();
+  private cores = { acerto: '', erro: '', linha: '', cobra: '', cabeca: '', opcao: '', texto: '', olho: '' };
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
@@ -36,7 +41,6 @@ export class Desenhista {
       cobra: cor('--cobra'),
       cabeca: cor('--cobra-cabeca'),
       opcao: cor('--opcao'),
-      borda: cor('--opcao-borda'),
       texto: cor('--texto'),
       olho: cor('--fundo'),
     };
@@ -75,23 +79,25 @@ export class Desenhista {
     }
     ctx.stroke();
 
-    const tamanhoFonte = Math.max(11, casa * 0.75);
-    ctx.font = `700 ${tamanhoFonte}px Lexend, system-ui, sans-serif`;
+    // No tabuleiro vai só a letra, grande; o texto da alternativa fica ao lado da pergunta.
+    const tamanhoFonte = Math.max(14, casa * 1.1);
+    ctx.font = `800 ${tamanhoFonte}px Lexend, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const opcao of estado.opcoes) {
       const x = opcao.pos.x * casa + 2;
       const y = opcao.pos.y * casa + 2;
       const tamanho = casa * LADO_OPCAO - 4;
+      const corLetra = this.corLetra(opcao.letra);
       ctx.fillStyle = cores.opcao;
-      ctx.strokeStyle = cores.borda;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = corLetra;
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.roundRect(x, y, tamanho, tamanho, casa * 0.35);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = cores.texto;
-      ctx.fillText(opcao.texto, x + tamanho / 2, y + tamanho / 2, tamanho - 4);
+      ctx.fillStyle = corLetra;
+      ctx.fillText(opcao.letra, x + tamanho / 2, y + tamanho / 2 + casa * 0.05, tamanho - 4);
     }
 
     // A cobra enfraquece com a energia: perde opacidade e pisca nos últimos segundos.
@@ -119,6 +125,15 @@ export class Desenhista {
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
+  }
+
+  private corLetra(letra: Letra): string {
+    let valor = this.coresLetra.get(letra);
+    if (valor === undefined) {
+      valor = cor(corDaLetra(letra)) || this.cores.texto;
+      this.coresLetra.set(letra, valor);
+    }
+    return valor;
   }
 
   /** Dois olhinhos na frente da cabeça mostram para onde a cobra vai. */

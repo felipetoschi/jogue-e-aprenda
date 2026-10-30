@@ -38,9 +38,13 @@ npm run build      # gera dist/ (plataforma + jogos)
 
 - **Conteúdo, progresso e jogos são separados.** Os jogos não têm conteúdo próprio: a plataforma gera as
   perguntas em `packages/conteudo` e envia ao jogo. O progresso é por habilidade, venha de qual jogo vier.
-- **Padrão dos jogos** (`packages/sdk-jogo/src/padrao.ts`): 20 perguntas por partida; opções e tempo por
+- **Padrão dos jogos** (`packages/sdk-jogo/src/padrao.ts`): 20 perguntas por partida; alternativas e tempo por
   pergunta por estágio — Básico 3 / 15 s, Intermediário 3 / 12 s, Avançado 4 / 9 s, Mestre 4 / 8 s.
   Pontuação = acertos ÷ perguntas × 100. Todo jogo usa esses números; nenhum tem cópia própria.
+- **Alternativas com letra.** Toda pergunta vem com alternativas A, B, C… (no máximo A a E), para servir a
+  qualquer disciplina, não só a respostas em número. O jogo mostra a letra para pegar e o texto ao lado da
+  pergunta. Um jogo pode fixar quantas alternativas quer (2 a 5) em `alternativas` no manifesto; sem isso,
+  vale o número do estágio. O tempo por pergunta segue o estágio de qualquer jogo.
 - **Todos começam no Básico.** Não existe prova nem atalho para pular estágio.
 - **Só sobe de estágio quem zera** a partida no estágio atual (acerta as 20), em todos os estágios. Zerar um
   estágio anterior não faz subir. A maestria existe só como indicador.
@@ -55,6 +59,8 @@ npm run build      # gera dist/ (plataforma + jogos)
 
 ## Cobrinha que Calcula (primeiro jogo)
 
+- Sempre duas alternativas, A e B (`"alternativas": 2` no manifesto): no tabuleiro só as letras, cada uma
+  com sua cor; o texto de cada uma fica embaixo da pergunta.
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.

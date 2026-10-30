@@ -47,8 +47,8 @@ export function Jogar() {
   const [config] = useState<ConfigPartida | null>(() => {
     if (!jogo || !def) return null;
     const base = configParaPartida(perfil, def, modo, ehEstagio(estagioPedido) ? estagioPedido : undefined);
-    // As perguntas vêm do banco de conteúdo; o jogo só as mostra.
-    const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, PADRAO.questoesPorPartida);
+    // As perguntas vêm do banco de conteúdo, com as alternativas que o jogo pede; o jogo só as mostra.
+    const questoes = gerarQuestoes(def.id, base.estagio, base.ajuste, PADRAO.questoesPorPartida, { alternativas: jogo.alternativas });
     return { ...base, partidaId: novoId(), rotulo: `${def.nome} · ${NOMES_ESTAGIO[base.estagio]}`, questoes };
   });
 

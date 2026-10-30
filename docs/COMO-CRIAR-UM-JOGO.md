@@ -4,21 +4,24 @@
    - `package.json` com nome `@jogue/jogo-<id>`, scripts `dev`, `build`, `typecheck`, `test` e dependência `@jogue/sdk-jogo`;
    - `vite.config.ts` com `base: './'` no build e `/jogos/<id>/` em desenvolvimento, numa porta própria;
    - `manifesto.json` exportado em `exports["./manifesto"]`, com `materias` (disciplinas que o jogo oferece),
-     `formatos` (formatos de pergunta que ele mostra, hoje `resposta-curta`) e `icone` (arquivo do próprio jogo).
+     `formatos` (formatos de pergunta que ele mostra, hoje `resposta-curta`), `icone` (arquivo do próprio jogo) e,
+     se o jogo usar sempre o mesmo número de alternativas, `alternativas` (2 a 5; a Cobrinha usa 2).
    - O jogo não tem conteúdo próprio: as perguntas chegam em `conexao.config.questoes`.
 2. No código do jogo, conecte-se à plataforma:
 
    ```ts
    import { conectarAPlataforma } from '@jogue/sdk-jogo';
+   import manifesto from '../manifesto.json';
 
    const conexao = await conectarAPlataforma({
      // Só usada quando o jogo roda fora da plataforma: gera perguntas do banco de conteúdo.
      configAvulsa: async () => {
        const { gerarQuestoes } = await import('@jogue/conteudo');
-       return { habilidadeId: 'adicao', estagio: 'basico', ajuste: 0.5, modo: 'normal', rotulo: 'Adição · Básico', questoes: gerarQuestoes('adicao', 'basico', 0.5, 20) };
+       return { habilidadeId: 'adicao', estagio: 'basico', ajuste: 0.5, modo: 'normal', rotulo: 'Adição · Básico', questoes: gerarQuestoes('adicao', 'basico', 0.5, 20, { alternativas: manifesto.alternativas }) };
      },
    });
-   // conexao.config traz habilidade, estágio, ajuste (0 a 1), modo, rótulo e as perguntas (enunciado, resolução, opções).
+   // conexao.config traz habilidade, estágio, ajuste (0 a 1), modo, rótulo e as perguntas
+   // (enunciado, resolução e alternativas, cada uma com letra, texto e se é a certa).
    // Ao terminar:
    conexao.enviarResultado({
      pontuacao: 80, // 0 a 100: vira estrelas e XP
@@ -36,13 +39,17 @@
 
 Os números do padrão ficam em `packages/sdk-jogo/src/padrao.ts` (`PADRAO`), e todo jogo usa os mesmos:
 
-| Estágio | Opções por pergunta | Tempo por pergunta |
+| Estágio | Alternativas por pergunta | Tempo por pergunta |
 | --- | --- | --- |
 | Básico | 3 | 15 s |
 | Intermediário | 3 | 12 s |
 | Avançado | 4 | 9 s |
 | Mestre | 4 | 8 s |
 
+- As alternativas têm letra: A, B, C, D e E, no máximo cinco. Um jogo pode fixar quantas usa com `alternativas`
+  no manifesto (2 a 5); aí a plataforma gera as perguntas com esse número em todos os estágios. O tempo segue a tabela.
+- Mostre a letra no lugar onde o jogador escolhe (no tabuleiro, na carta, no alvo) e o texto da alternativa junto
+  da pergunta. Assim o mesmo jogo serve para "7 × 8" e para "Qual a capital do Peru?".
 - Toda partida tem 20 perguntas. **Zerar** = acertar as 20; só assim o jogador sobe de estágio.
 - Erro ou tempo esgotado encerra a partida e conta como tentativa. Erros de reflexo (bater, cair) não contam.
 - Pontuação = acertos ÷ perguntas × 100 (`pontuacaoPadrao`). A plataforma recusa resultados fora do padrão.
@@ -51,7 +58,8 @@ Os números do padrão ficam em `packages/sdk-jogo/src/padrao.ts` (`PADRAO`), e 
 Checklist para aprovar um jogo novo:
 
 - [ ] Usa só perguntas do banco de conteúdo
-- [ ] Usa `PADRAO` e `segundosPorPergunta` para opções e tempo
+- [ ] Usa `PADRAO` e `segundosPorPergunta` para alternativas e tempo
+- [ ] Mostra a letra de cada alternativa e o texto dela; textos longos (nomes, frases curtas) cabem no celular
 - [ ] Erro e tempo esgotado encerram a partida; erros de reflexo não contam como tentativa
 - [ ] Mostra a resolução e a explicação ao errar
 - [ ] Envia pontuação padrão, acertos, tentativas e como terminou
@@ -68,7 +76,9 @@ Outras regras:
 
 Todo o conteúdo fica em `packages/conteudo`. Para uma nova disciplina:
 
-1. Crie `packages/conteudo/src/<disciplina>/` com as habilidades (`Habilidade[]`) e um gerador que devolve `Questao`.
+1. Crie `packages/conteudo/src/<disciplina>/` com as habilidades (`Habilidade[]`) e um gerador que recebe quantas
+   alternativas criar e devolve uma `QuestaoGerada` (uma certa e as erradas com explicação). As letras são postas
+   depois, por `gerarQuestoes`; o gerador só cuida de que a certa não fique sempre na mesma posição.
 2. Registre as habilidades em `HABILIDADES` e o gerador em `GERADORES` (`packages/conteudo/src/index.ts`).
 3. Marque a disciplina como `disponivel: true` em `materias.ts`.
 4. Inclua o id da disciplina em `materias` no manifesto de cada jogo que deve oferecê-la.
