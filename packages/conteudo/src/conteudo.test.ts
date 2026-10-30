@@ -2,6 +2,7 @@ import { ESTAGIOS } from '@jogue/sdk-jogo';
 import { describe, expect, it } from 'vitest';
 import { comSemente } from './aleatorio';
 import { ESTADOS, PAISES } from './geografia/dados';
+import { FATOS_BRASIL, FATOS_MUNDO } from './historia/dados';
 import { gerarQuestoes, HABILIDADES, MATERIAS } from './index';
 
 describe('banco de conteúdo', () => {
@@ -129,5 +130,72 @@ describe('Geografia', () => {
     expect(new Set(ESTADOS.map((e) => e.capital)).size).toBe(27);
     expect(new Set(PAISES.map((p) => p.capital)).size).toBe(PAISES.length);
     expect(new Set(PAISES.map((p) => p.nome)).size).toBe(PAISES.length);
+  });
+});
+
+describe('História', () => {
+  const historia = HABILIDADES.filter((h) => h.materiaId === 'historia');
+  const certa = (q: { opcoes: { correta: boolean; texto: string }[] }) => q.opcoes.find((o) => o.correta)!.texto;
+  const errada = (q: { opcoes: { correta: boolean; texto: string }[] }) => q.opcoes.find((o) => !o.correta)!.texto;
+
+  it('tem Datas do Brasil, Datas do mundo e Brasil e mundo, abertas desde o início', () => {
+    expect(historia.map((h) => h.id)).toEqual(['datas-brasil', 'datas-mundo', 'todas-datas']);
+    for (const h of historia) expect(h.prerequisitos).toEqual([]);
+  });
+
+  it('não repete pergunta numa partida de 20 e usa textos curtos', () => {
+    const rng = comSemente(31);
+    for (const h of historia) {
+      for (const estagio of ESTAGIOS) {
+        for (let partida = 0; partida < 5; partida++) {
+          const questoes = gerarQuestoes(h.id, estagio, 0.5, 20, { alternativas: 2, rng });
+          expect(new Set(questoes.map((q) => `${q.enunciado}|${certa(q)}`)).size, `${h.id} ${estagio}`).toBe(20);
+          for (const q of questoes) {
+            expect(q.enunciado.length, q.enunciado).toBeLessThanOrEqual(36);
+            for (const o of q.opcoes) expect(o.texto.length, o.texto).toBeLessThanOrEqual(20);
+          }
+        }
+      }
+    }
+  });
+
+  it('o ano errado fica mais perto do certo a cada estágio, e nunca no futuro', () => {
+    const faixa = { basico: [10, 40], intermediario: [4, 15], avancado: [2, 8], mestre: [1, 4] } as const;
+    const rng = comSemente(12);
+    for (const estagio of ESTAGIOS) {
+      for (const q of gerarQuestoes('todas-datas', estagio, 0.5, 200, { alternativas: 2, rng }).filter((q) => q.enunciado.startsWith('Ano '))) {
+        const distancia = Math.abs(Number(certa(q)) - Number(errada(q)));
+        expect(distancia, q.enunciado).toBeGreaterThanOrEqual(faixa[estagio][0]);
+        expect(distancia, q.enunciado).toBeLessThanOrEqual(faixa[estagio][1]);
+        expect(Number(errada(q))).toBeLessThanOrEqual(2025);
+      }
+    }
+  });
+
+  it('em "Qual veio primeiro?", a certa é mesmo a mais antiga', () => {
+    const anos = new Map([...FATOS_BRASIL, ...FATOS_MUNDO].map((f) => [f.curto, f.ano]));
+    const questoes = gerarQuestoes('todas-datas', 'mestre', 0.5, 300, { alternativas: 4, rng: comSemente(5) });
+    const ordem = questoes.filter((q) => q.enunciado === 'Qual veio primeiro?');
+    expect(ordem.length).toBeGreaterThan(0);
+    for (const q of ordem) {
+      const anoCerto = anos.get(certa(q))!;
+      for (const o of q.opcoes.filter((o) => !o.correta)) expect(anos.get(o.texto)!).toBeGreaterThan(anoCerto);
+    }
+  });
+
+  it('no Básico, só fatos conhecidos', () => {
+    const conhecidos = new Set([...FATOS_BRASIL, ...FATOS_MUNDO].filter((f) => f.fama <= 2).map((f) => String(f.ano)));
+    for (const q of gerarQuestoes('todas-datas', 'basico', 1, 100, { alternativas: 2, rng: comSemente(3) })) {
+      expect(conhecidos.has(certa(q)), q.enunciado).toBe(true);
+    }
+  });
+
+  it('dados consistentes: nomes curtos únicos e nenhum com o ano no texto', () => {
+    const fatos = [...FATOS_BRASIL, ...FATOS_MUNDO];
+    expect(new Set(fatos.map((f) => f.curto)).size).toBe(fatos.length);
+    for (const f of fatos) {
+      expect(f.curto.length, f.curto).toBeLessThanOrEqual(20);
+      expect(`${f.nome} ${f.curto}`, f.nome).not.toContain(String(f.ano));
+    }
   });
 });

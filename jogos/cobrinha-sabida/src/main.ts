@@ -83,7 +83,8 @@ class Partida {
     ouvirSetas(el('setas'), { aoVirar });
     ouvirDeslize(el('tabuleiro'), { aoVirar });
     document.addEventListener('visibilitychange', () => document.hidden && this.fase === 'jogando' && this.alternarPausa());
-    window.addEventListener('resize', () => this.desenhista.redimensionar());
+    // O tabuleiro muda de tamanho com a janela e com a altura da pergunta: refaz a resolução do desenho.
+    new ResizeObserver(() => this.desenhista.redimensionar()).observe(el('tabuleiro'));
 
     this.atualizarHud();
     requestAnimationFrame((t) => this.quadro(t));
