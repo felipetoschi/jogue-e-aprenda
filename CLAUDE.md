@@ -29,7 +29,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 | Pasta | O que é |
 | --- | --- |
 | `apps/plataforma` | Site (React): Início, Jogos, Partida, Resultado, Progresso |
-| `packages/conteudo` | Todo o conteúdo de todos os jogos, separado por disciplina (`src/matematica/`) |
+| `packages/conteudo` | Todo o conteúdo de todos os jogos, separado por disciplina (`src/matematica/`, `src/geografia/`) |
 | `packages/progressao` | Regras puras de XP, nível, estrelas, estágio, revisão e desbloqueio |
 | `packages/sdk-jogo` | Contrato plataforma ↔ jogo, `PADRAO` dos jogos e validação de resultados |
 | `jogos/<id>` | Cada jogo é um app separado, carregado num iframe só ao jogar |
@@ -47,6 +47,8 @@ npm run build      # gera dist/ (plataforma + jogos)
   vale o número do estágio. O tempo por pergunta segue o estágio de qualquer jogo.
 - **Erradas parecidas com a certa.** Em Matemática, toda alternativa errada tem o mesmo número de algarismos
   da certa e fica a no máximo 25% de distância dela (`perto` em `contas.ts`), para não dar para descartar de olho.
+  Em Geografia, a errada vem da mesma região ou continente e de um lugar tão conhecido quanto o da certa.
+- **Sem repetir na partida.** A mesma pergunta não sai duas vezes nas 20 de uma partida.
 - **Todos começam no Básico.** Não existe prova nem atalho para pular estágio.
 - **Só sobe de estágio quem zera** a partida no estágio atual (acerta as 20), em todos os estágios. Zerar um
   estágio anterior não faz subir. A maestria existe só como indicador.
@@ -66,9 +68,19 @@ npm run build      # gera dist/ (plataforma + jogos)
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.
-  Todas abertas desde o início (sem pré-requisito); em cada uma, os estágios sobem um a um ao zerar.
+- Habilidades de Geografia: Estados e capitais, Regiões do Brasil, Países e capitais, Continentes e Todos os temas.
+- Todas abertas desde o início (sem pré-requisito); em cada uma, os estágios sobem um a um ao zerar.
 
 ## Para criar um jogo ou uma disciplina
 
 Siga `docs/COMO-CRIAR-UM-JOGO.md` (padrão, checklist de aprovação e como adicionar disciplina).
 Ao mudar uma regra, atualize também o plano, este arquivo e os testes.
+
+## Geografia
+
+- As perguntas saem de tabelas (`packages/conteudo/src/geografia/dados.ts`): 27 unidades da federação e ~95 países,
+  cada um com capital, região ou continente e fama (1 = todo mundo conhece, 3 = pouco conhecido).
+- O que sobe de um estágio para o outro: lugares menos conhecidos, grupo maior e pergunta ao contrário
+  ("Recife é capital de?"). No Mestre de países entram as pegadinhas (Sydney × Camberra).
+- Países em dois continentes (Rússia, Turquia, Cazaquistão) não entram nas perguntas de continente.
+- Nomes com até 20 letras, para caberem nas alternativas no celular. Para incluir um lugar, basta uma linha na tabela.

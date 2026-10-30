@@ -79,6 +79,8 @@ Todo o conteúdo fica em `packages/conteudo`. Para uma nova disciplina:
 1. Crie `packages/conteudo/src/<disciplina>/` com as habilidades (`Habilidade[]`) e um gerador que recebe quantas
    alternativas criar e devolve uma `QuestaoGerada` (uma certa e as erradas com explicação). As letras são postas
    depois, por `gerarQuestoes`; o gerador só cuida de que a certa não fique sempre na mesma posição.
+   Para conteúdo de fatos (como Geografia), monte tabelas de dados e gere as perguntas a partir delas, com as
+   erradas vindas do mesmo grupo (veja `packages/conteudo/src/geografia/`).
 2. Registre as habilidades em `HABILIDADES` e o gerador em `GERADORES` (`packages/conteudo/src/index.ts`).
 3. Marque a disciplina como `disponivel: true` em `materias.ts`.
 4. Inclua o id da disciplina em `materias` no manifesto de cada jogo que deve oferecê-la.

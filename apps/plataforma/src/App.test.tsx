@@ -68,10 +68,11 @@ describe('plataforma', () => {
     expect(screen.getByRole('heading', { name: 'Histórico' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Apagar progresso' })).toBeInTheDocument();
     expect(screen.getAllByText('Maestria 0 · zere o Básico (20 de 20) para subir').length).toBeGreaterThan(0);
-    expect(screen.getByText('0% da disciplina dominada')).toBeInTheDocument();
-    // Todas as operações de Matemática ficam abertas desde o início.
+    // Matemática e Geografia, cada uma com seu quadro.
+    expect(screen.getAllByText('0% da disciplina dominada')).toHaveLength(2);
+    // Todas as habilidades ficam abertas desde o início: 5 de Matemática e 5 de Geografia.
     expect(screen.queryByText(/^Falta:/)).toBeNull();
-    expect(screen.getAllByRole('link', { name: 'Treinar' })).toHaveLength(5);
+    expect(screen.getAllByRole('link', { name: 'Treinar' })).toHaveLength(10);
     expect(screen.getAllByRole('link', { name: 'Treinar' })[0]).toHaveAttribute('href', '#/jogos?habilidade=adicao');
     expect(screen.getByText('Português')).toBeInTheDocument();
   });

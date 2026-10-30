@@ -16,6 +16,9 @@ const TITULOS_FIM: Record<MotivoFim, string> = {
   corpo: 'Bateu no próprio corpo',
 };
 
+/** Até quantas letras a pergunta usa a letra grande. */
+const LIMITE_CONTA_CURTA = 14;
+
 /** Tempo da animação de fim antes de devolver o resultado à plataforma. */
 const ESPERA_FIM_MS = 3200;
 
@@ -144,7 +147,10 @@ class Partida {
 
   private atualizarHud() {
     const { estado } = this;
-    el('conta').textContent = estado.fim?.motivo === 'vitoria' ? '🎉' : estado.questao.enunciado;
+    const conta = el('conta');
+    conta.textContent = estado.fim?.motivo === 'vitoria' ? '🎉' : estado.questao.enunciado;
+    // Pergunta de texto ("Capital do Rio Grande do Norte?") usa letra menor, para caber sem empurrar o tabuleiro.
+    conta.classList.toggle('longa', conta.textContent.length > LIMITE_CONTA_CURTA);
     this.mostrarAlternativas(estado.fim?.motivo === 'vitoria' ? null : estado.questao);
     el('pontos').textContent = `${estado.acertos}/${estado.meta}`;
     el('dica').hidden = !(this.fase === 'jogando' && estado.parada);

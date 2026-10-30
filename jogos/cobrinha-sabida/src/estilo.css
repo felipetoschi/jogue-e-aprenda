@@ -67,12 +67,18 @@ body {
 }
 
 .conta {
+  min-height: 1.2em;
+  line-height: 1.15;
   font-family: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   text-align: center;
   font-size: clamp(28px, 8vw, 44px);
   font-weight: 800;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+}
+
+.conta.longa {
+  font-size: clamp(20px, 5.6vw, 30px);
 }
 
 /* As alternativas da pergunta: a letra no tabuleiro, o texto aqui. */
@@ -133,7 +139,7 @@ body {
   position: relative;
   width: 100%;
   /* O tabuleiro é quadrado e cabe na altura que sobra entre o topo e os controles. */
-  max-width: min(100%, calc(100dvh - 300px));
+  max-width: min(100%, calc(100dvh - 340px));
   aspect-ratio: 1;
 }
 
@@ -355,6 +361,14 @@ body {
   }
   .so-teclado {
     display: none;
+  }
+}
+
+/* Celular baixo: setas um pouco menores, para caberem inteiras embaixo do tabuleiro. */
+@media (hover: none) and (pointer: coarse) and (max-height: 700px) {
+  .setas {
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(3, 48px);
   }
 }
 
