@@ -10,6 +10,12 @@
   --opcao-borda: #4b5b85;
   --destaque: #fbbf24;
   --perigo: #f87171;
+  /* Uma cor por letra, a mesma no tabuleiro e ao lado da pergunta. */
+  --letra-a: #60a5fa;
+  --letra-b: #fb923c;
+  --letra-c: #f472b6;
+  --letra-d: #a78bfa;
+  --letra-e: #facc15;
   color-scheme: dark;
 }
 
@@ -69,6 +75,41 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* As alternativas da pergunta: a letra no tabuleiro, o texto aqui. */
+.alternativas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.alternativa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px 12px 4px 4px;
+  border: 2px solid var(--cor-letra);
+  border-radius: 10px;
+  background: var(--painel);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.alternativa .letra {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--cor-letra);
+  color: var(--fundo);
+  font-weight: 800;
+}
+
 .energia {
   height: 10px;
   background: var(--linha);
@@ -92,7 +133,7 @@ body {
   position: relative;
   width: 100%;
   /* O tabuleiro é quadrado e cabe na altura que sobra entre o topo e os controles. */
-  max-width: min(100%, calc(100dvh - 260px));
+  max-width: min(100%, calc(100dvh - 300px));
   aspect-ratio: 1;
 }
 
@@ -324,6 +365,6 @@ body {
     min-height: 56px;
   }
   .tabuleiro-area {
-    max-width: min(100%, calc(100dvh - 200px));
+    max-width: min(100%, calc(100dvh - 240px));
   }
 }

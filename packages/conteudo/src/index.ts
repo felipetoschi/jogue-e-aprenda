@@ -3,19 +3,20 @@
  * Os jogos não têm conteúdo próprio; a plataforma gera as perguntas aqui e as envia ao jogo.
  * Para uma nova disciplina, crie a pasta dela com habilidades e gerador e registre-a abaixo.
  */
-import type { Estagio, Questao } from '@jogue/sdk-jogo';
+import { LETRAS, alternativasPorPergunta, type Estagio, type Questao } from '@jogue/sdk-jogo';
 import type { Rng } from './aleatorio';
 import { HABILIDADES_MATEMATICA } from './matematica/habilidades';
 import { questaoDeMatematica } from './matematica/questoes';
 import { MATERIAS } from './materias';
-import type { Habilidade } from './tipos';
+import type { Habilidade, QuestaoGerada } from './tipos';
 
-export type { Habilidade, Materia } from './tipos';
+export type { Habilidade, Materia, QuestaoGerada } from './tipos';
 export { MATERIAS } from './materias';
 
 export const HABILIDADES: Habilidade[] = [...HABILIDADES_MATEMATICA];
 
-type Gerador = (habilidadeId: string, estagio: Estagio, ajuste: number, rng: Rng) => Questao;
+/** Gera uma pergunta com exatamente `alternativas` opções, uma delas certa. */
+type Gerador = (habilidadeId: string, estagio: Estagio, ajuste: number, alternativas: number, rng: Rng) => QuestaoGerada;
 
 const GERADORES: Record<string, Gerador> = {
   matematica: questaoDeMatematica,
@@ -25,10 +26,30 @@ export const habilidadePorId = (id: string) => HABILIDADES.find((h) => h.id === 
 export const materiaPorId = (id: string) => MATERIAS.find((m) => m.id === id);
 export const habilidadesDaMateria = (materiaId: string) => HABILIDADES.filter((h) => h.materiaId === materiaId);
 
-/** Gera as perguntas de uma partida para uma habilidade, num estágio e dificuldade. */
-export function gerarQuestoes(habilidadeId: string, estagio: Estagio, ajuste: number, quantidade: number, rng: Rng = Math.random): Questao[] {
+export interface OpcoesGeracao {
+  /** Alternativas por pergunta que o jogo pede (manifesto). Sem isso, o padrão do estágio. */
+  alternativas?: number;
+  rng?: Rng;
+}
+
+/**
+ * Gera as perguntas de uma partida para uma habilidade, num estágio e dificuldade.
+ * Cada alternativa recebe a sua letra (A, B, C…), na ordem em que aparece.
+ */
+export function gerarQuestoes(
+  habilidadeId: string,
+  estagio: Estagio,
+  ajuste: number,
+  quantidade: number,
+  { alternativas, rng = Math.random }: OpcoesGeracao = {},
+): Questao[] {
   const habilidade = habilidadePorId(habilidadeId);
   const gerador = habilidade && GERADORES[habilidade.materiaId];
   if (!gerador) throw new Error(`Sem conteúdo para a habilidade ${habilidadeId}`);
-  return Array.from({ length: quantidade }, () => gerador(habilidadeId, estagio, ajuste, rng));
+  const total = alternativasPorPergunta(estagio, alternativas);
+  return Array.from({ length: quantidade }, () => {
+    const questao = gerador(habilidadeId, estagio, ajuste, total, rng);
+    if (questao.opcoes.length !== total) throw new Error(`Pergunta de ${habilidadeId} sem ${total} alternativas`);
+    return { ...questao, opcoes: questao.opcoes.map((o, i) => ({ ...o, letra: LETRAS[i]! })) };
+  });
 }

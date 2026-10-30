@@ -133,7 +133,7 @@ export function Apresentacao() {
                 <p className="sobretitulo">{cobrinha.materias.map((m) => materiaPorId(m)?.nome).join(' · ')}</p>
               </div>
             </div>
-            <p>Coma a resposta certa antes que a energia acabe.</p>
+            <p>Coma a letra certa, A ou B, antes que a energia acabe.</p>
             <Link className="botao" to="/jogos">
               Jogar
             </Link>

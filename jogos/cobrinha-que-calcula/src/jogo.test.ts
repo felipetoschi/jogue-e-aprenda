@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { comSemente } from './aleatorio';
 import { avancar, criarJogo, dentroDoBloco, virar, type EstadoJogo, type Posicao } from './jogo';
-import type { Questao } from '@jogue/sdk-jogo';
+import { LETRAS, type Questao } from '@jogue/sdk-jogo';
+import manifesto from '../manifesto.json';
 import { LADO_OPCAO, TAMANHO_TABULEIRO } from './regras';
 
 /** Perguntas de exemplo: o jogo não tem conteúdo próprio, ele recebe da plataforma. */
-function questoes(quantidade = 20, opcoes = 3): Questao[] {
+function questoes(quantidade = 20, opcoes = 2): Questao[] {
   return Array.from({ length: quantidade }, (_, i) => ({
     habilidadeId: 'teste',
     enunciado: `${i} + 1 = ?`,
     resolucao: `${i} + 1 = ${i + 1}`,
     opcoes: Array.from({ length: opcoes }, (_, k) => ({
+      letra: LETRAS[k]!,
       texto: String(i + 1 + k),
       correta: k === 0,
       ...(k > 0 ? { erro: { tipo: 'por-pouco', rotulo: 'Errou por pouco', explicacao: `Quase! ${i} + 1 = ${i + 1}.` } } : {}),
@@ -39,11 +41,15 @@ function porOpcaoNaFrente(e: EstadoJogo, correta: boolean) {
 }
 
 describe('jogo da cobrinha', () => {
-  it('começa com 3 segmentos, energia cheia e opções fora do corpo', () => {
+  it('pede duas alternativas por pergunta: A e B', () => {
+    expect(manifesto.alternativas).toBe(2);
+  });
+
+  it('começa com 3 segmentos, energia cheia e as duas alternativas fora do corpo', () => {
     const e = novo();
     expect(e.cobra).toHaveLength(3);
     expect(e.energia).toBe(1);
-    expect(e.opcoes).toHaveLength(3);
+    expect(e.opcoes.map((o) => o.letra)).toEqual(['A', 'B']);
     for (const o of e.opcoes) expect(e.cobra.some((p) => dentroDoBloco(p, o.pos))).toBe(false);
   });
 

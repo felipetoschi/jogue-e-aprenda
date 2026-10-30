@@ -18,12 +18,19 @@ export type ModoPartida = 'normal' | 'revisao' | 'treino';
 
 /**
  * Formatos de pergunta. Cada jogo declara quais sabe mostrar; o conteúdo diz o formato de cada habilidade.
- * resposta-curta: enunciado + opções curtas (um número, uma palavra, um nome).
+ * resposta-curta: enunciado + alternativas curtas (um número, uma palavra, um nome), cada uma com a sua letra.
  */
 export type FormatoQuestao = 'resposta-curta';
 
+/** Letras das alternativas, na ordem. No máximo cinco por pergunta (A a E). */
+export const LETRAS = ['A', 'B', 'C', 'D', 'E'] as const;
+export type Letra = (typeof LETRAS)[number];
+
+/** Uma alternativa da pergunta. O jogo pode mostrar só a letra no lugar de pegar e o texto ao lado da pergunta. */
 export interface OpcaoQuestao {
-  /** Texto exibido na opção, ex.: "56", "Lima", "pães". */
+  /** Letra da alternativa, ex.: "A". */
+  letra: Letra;
+  /** Texto da alternativa, ex.: "56", "Lima", "Rio Amazonas". */
   texto: string;
   correta: boolean;
   /** Nas opções erradas: que erro ela imita e a explicação para o jogador. */
@@ -104,6 +111,11 @@ export interface ManifestoJogo {
   materias: string[];
   /** Formatos de pergunta que o jogo sabe mostrar. */
   formatos: FormatoQuestao[];
+  /**
+   * Quantas alternativas o jogo mostra por pergunta, se for sempre o mesmo número (2 a 5).
+   * Sem isso, segue o padrão do estágio (PADRAO.estagios).
+   */
+  alternativas?: number;
   duracaoMinutos: [min: number, max: number];
   /** Caminho (relativo à plataforma) do build do jogo, carregado só quando o jogador abre o jogo. */
   url: string;

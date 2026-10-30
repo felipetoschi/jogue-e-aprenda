@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * Demonstração da Cobrinha que Calcula na página inicial: a cobra vai sozinha até
- * o resultado certo de cada conta. Não carrega o jogo; é só uma animação leve.
+ * a letra da resposta certa de cada conta (A ou B). Não carrega o jogo; é só uma animação leve.
  */
 
 const COLUNAS = 10;
@@ -16,15 +16,17 @@ interface Posicao {
   y: number;
 }
 
+/** Em cada rodada, as alternativas A e B, na ordem; `certa` diz qual delas é a resposta. */
 const RODADAS = [
-  { texto: '7 × 8', certa: 56, falsas: [48, 63] },
-  { texto: '45 + 38', certa: 83, falsas: [73, 84] },
-  { texto: '(6 + 2) × 3', certa: 24, falsas: [12, 18] },
-  { texto: '144 ÷ 12', certa: 12, falsas: [14, 11] },
+  { texto: '7 × 8', alternativas: [56, 48], certa: 0 },
+  { texto: '45 + 38', alternativas: [73, 83], certa: 1 },
+  { texto: '36 ÷ 4', alternativas: [8, 9], certa: 1 },
+  { texto: '15 − 7', alternativas: [8, 22], certa: 0 },
 ];
+const LETRAS = ['A', 'B'] as const;
 
 interface Peca extends Posicao {
-  valor: number;
+  letra: string;
   certa: boolean;
 }
 
@@ -41,15 +43,16 @@ function sorteador(semente: number) {
 }
 
 function posicionar(rodada: number, cobra: Posicao[]): Peca[] {
-  const { certa, falsas } = RODADAS[rodada % RODADAS.length]!;
-  const valores = [certa, ...falsas];
+  const { certa } = RODADAS[rodada % RODADAS.length]!;
+  // A certa é posicionada primeiro, para a cobra ter sempre caminho até ela.
+  const ordem = [certa, 1 - certa];
   const sorte = sorteador(rodada * 7919 + 17);
   const pecas: Peca[] = [];
-  for (let tentativa = 0; tentativa < 500 && pecas.length < valores.length; tentativa++) {
+  for (let tentativa = 0; tentativa < 500 && pecas.length < ordem.length; tentativa++) {
     const p = { x: 1 + Math.floor(sorte() * (COLUNAS - 2)), y: 1 + Math.floor(sorte() * (LINHAS - 2)) };
     if (cobra.some((c) => igual(c, p)) || distancia(p, cobra[0]!) < 4) continue;
     if (pecas.some((o) => distancia(o, p) < 3)) continue;
-    pecas.push({ ...p, valor: valores[pecas.length]!, certa: pecas.length === 0 });
+    pecas.push({ ...p, letra: LETRAS[ordem[pecas.length]!]!, certa: pecas.length === 0 });
   }
   return pecas;
 }
@@ -80,6 +83,7 @@ function caminho(cobra: Posicao[], pecas: Peca[]): Posicao[] {
 export function DemoCobrinha() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [conta, setConta] = useState({ texto: RODADAS[0]!.texto, resposta: null as number | null });
+  const rodadaAtual = RODADAS.find((r) => r.texto === conta.texto)!;
 
   useEffect(() => {
     const tela = canvas.current;
@@ -115,7 +119,7 @@ export function DemoCobrinha() {
       }
       ctx!.stroke();
 
-      ctx!.font = `700 ${lado * 0.4}px Lexend, system-ui, sans-serif`;
+      ctx!.font = `800 ${lado * 0.55}px Lexend, system-ui, sans-serif`;
       ctx!.textAlign = 'center';
       ctx!.textBaseline = 'middle';
       for (const p of pecas) {
@@ -124,7 +128,7 @@ export function DemoCobrinha() {
         ctx!.roundRect(p.x * lado + 3, p.y * lado + 3, lado - 6, lado - 6, lado * 0.25);
         ctx!.fill();
         ctx!.fillStyle = cor('--demo-peca-texto');
-        ctx!.fillText(String(p.valor), (p.x + 0.5) * lado, (p.y + 0.53) * lado);
+        ctx!.fillText(p.letra, (p.x + 0.5) * lado, (p.y + 0.53) * lado);
       }
 
       cobra.forEach((parte, i) => {
@@ -171,7 +175,7 @@ export function DemoCobrinha() {
       const comida = pecas.find((p) => p.certa && igual(p, proxima));
       if (comida) {
         const atual = RODADAS[rodada % RODADAS.length]!;
-        setConta({ texto: atual.texto, resposta: atual.certa });
+        setConta({ texto: atual.texto, resposta: atual.alternativas[atual.certa]! });
         pecas = pecas.filter((p) => p !== comida);
         anel = { pos: proxima, quadros: 0 };
         pausaAte = agora + PAUSA_MS;
@@ -193,6 +197,13 @@ export function DemoCobrinha() {
     <figure className="demo" aria-label="Demonstração da Cobrinha que Calcula">
       <div className="demo-conta" aria-live="off">
         {conta.texto} = <span className={conta.resposta === null ? 'demo-interrogacao' : 'demo-resposta'}>{conta.resposta ?? '?'}</span>
+      </div>
+      <div className="demo-alternativas">
+        {rodadaAtual.alternativas.map((valor, i) => (
+          <span key={LETRAS[i]} className="demo-alternativa">
+            <b>{LETRAS[i]}</b> {valor}
+          </span>
+        ))}
       </div>
       <canvas ref={canvas} className="demo-tabuleiro" />
     </figure>

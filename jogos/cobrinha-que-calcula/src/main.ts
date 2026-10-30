@@ -1,6 +1,6 @@
 import './estilo.css';
-import { ESTAGIOS, NOMES_ESTAGIO, PADRAO, conectarAPlataforma, type ConexaoPlataforma, type Estagio } from '@jogue/sdk-jogo';
-import { Desenhista } from './desenho';
+import { ESTAGIOS, NOMES_ESTAGIO, PADRAO, conectarAPlataforma, type ConexaoPlataforma, type Estagio, type Questao } from '@jogue/sdk-jogo';
+import { Desenhista, corDaLetra } from './desenho';
 import { ouvirDeslize, ouvirSetas, ouvirTeclado } from './entrada';
 import { avancar, criarJogo, pontuacaoDe, virar, type EstadoJogo, type Fim, type MotivoFim } from './jogo';
 import { ALERTA_ENERGIA } from './regras';
@@ -24,7 +24,10 @@ const ESPERA_FIM_MS = 3200;
  * e as perguntas são geradas do banco de conteúdo, carregado só neste caso.
  */
 async function configDaUrl() {
-  const { gerarQuestoes, habilidadePorId } = await import('@jogue/conteudo');
+  const [{ gerarQuestoes, habilidadePorId }, { default: manifesto }] = await Promise.all([
+    import('@jogue/conteudo'),
+    import('../manifesto.json'),
+  ]);
   const busca = new URLSearchParams(window.location.search);
   const habilidade = habilidadePorId(busca.get('habilidade') ?? '') ?? habilidadePorId('multiplicacao')!;
   const pedido = busca.get('estagio');
@@ -36,7 +39,7 @@ async function configDaUrl() {
     ajuste,
     modo: 'normal' as const,
     rotulo: `${habilidade.nome} · ${NOMES_ESTAGIO[estagio]}`,
-    questoes: gerarQuestoes(habilidade.id, estagio, ajuste, PADRAO.questoesPorPartida),
+    questoes: gerarQuestoes(habilidade.id, estagio, ajuste, PADRAO.questoesPorPartida, { alternativas: manifesto.alternativas }),
   };
 }
 
@@ -46,6 +49,7 @@ class Partida {
   private estado: EstadoJogo;
   private fase: Fase = 'preparo';
   private ultimoQuadro = 0;
+  private questaoNaTela: Questao | null = null;
   private readonly desenhista = new Desenhista(el<HTMLCanvasElement>('tabuleiro'));
   private readonly retorno = new Retorno();
 
@@ -141,11 +145,30 @@ class Partida {
   private atualizarHud() {
     const { estado } = this;
     el('conta').textContent = estado.fim?.motivo === 'vitoria' ? '🎉' : estado.questao.enunciado;
+    this.mostrarAlternativas(estado.fim?.motivo === 'vitoria' ? null : estado.questao);
     el('pontos').textContent = `${estado.acertos}/${estado.meta}`;
     el('dica').hidden = !(this.fase === 'jogando' && estado.parada);
     const barra = el('energia');
     barra.style.transform = `scaleX(${estado.energia})`;
     barra.classList.toggle('alerta', estado.energia * estado.segundosPorQuestao < ALERTA_ENERGIA);
+  }
+
+  /** O texto de cada alternativa, ao lado da letra que a cobra precisa pegar. Só refaz ao trocar de pergunta. */
+  private mostrarAlternativas(questao: Questao | null) {
+    if (questao === this.questaoNaTela) return;
+    this.questaoNaTela = questao;
+    el('alternativas').replaceChildren(
+      ...(questao?.opcoes ?? []).map((opcao) => {
+        const item = document.createElement('span');
+        item.className = 'alternativa';
+        item.style.setProperty('--cor-letra', `var(${corDaLetra(opcao.letra)})`);
+        const letra = document.createElement('span');
+        letra.className = 'letra';
+        letra.textContent = opcao.letra;
+        item.append(letra, opcao.texto);
+        return item;
+      }),
+    );
   }
 
   private piscarConta(tipo: 'acerto' | 'erro') {
