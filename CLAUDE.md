@@ -29,7 +29,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 | Pasta | O que é |
 | --- | --- |
 | `apps/plataforma` | Site (React): Início, Jogos, Partida, Resultado, Progresso |
-| `packages/conteudo` | Todo o conteúdo de todos os jogos, separado por disciplina (`src/matematica/`, `src/geografia/`) |
+| `packages/conteudo` | Todo o conteúdo de todos os jogos, separado por disciplina (`src/matematica/`, `src/geografia/`, `src/historia/`) |
 | `packages/progressao` | Regras puras de XP, nível, estrelas, estágio, revisão e desbloqueio |
 | `packages/sdk-jogo` | Contrato plataforma ↔ jogo, `PADRAO` dos jogos e validação de resultados |
 | `jogos/<id>` | Cada jogo é um app separado, carregado num iframe só ao jogar |
@@ -69,6 +69,8 @@ npm run build      # gera dist/ (plataforma + jogos)
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.
 - Habilidades de Geografia: Estados e capitais, Regiões do Brasil, Países e capitais, Continentes e Todos os temas.
+- Habilidades de História: Datas do Brasil, Datas do mundo e Brasil e mundo.
+- O tabuleiro ocupa a altura que sobra entre a pergunta e as setas (pergunta de duas linhas não corta as setas).
 - Todas abertas desde o início (sem pré-requisito); em cada uma, os estágios sobem um a um ao zerar.
 
 ## Para criar um jogo ou uma disciplina
@@ -84,3 +86,11 @@ Ao mudar uma regra, atualize também o plano, este arquivo e os testes.
   ("Recife é capital de?"). No Mestre de países entram as pegadinhas (Sydney × Camberra).
 - Países em dois continentes (Rússia, Turquia, Cazaquistão) não entram nas perguntas de continente.
 - Nomes com até 20 letras, para caberem nas alternativas no celular. Para incluir um lugar, basta uma linha na tabela.
+
+## História
+
+- Datas históricas do Brasil e do mundo, numa tabela (`packages/conteudo/src/historia/dados.ts`): ano, nome para a
+  pergunta ("Ano da Lei Áurea?"), nome curto para a alternativa (até 20 letras, sem o ano) e fama de 1 a 3.
+- Estágios: Básico = fatos conhecidos, errada a 10–40 anos; Intermediário = mais fatos, 4–15 anos; Avançado =
+  2–8 anos e "O que houve em 1822?"; Mestre = 1–4 anos e "Qual veio primeiro?".
+- A errada preferida é o ano de outro fato próximo (Lei Áurea 1888 × República 1889); nenhuma errada no futuro.

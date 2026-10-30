@@ -4,7 +4,7 @@
   "descricao": "Guie a cobra até a letra da resposta certa: A ou B. A cada acerto ela cresce e fica mais rápida. Errou, bateu ou a energia acabou: fim de jogo.",
   "icone": "jogos/cobrinha-sabida/icone.svg",
   "tipo": "arcade",
-  "materias": ["matematica", "geografia"],
+  "materias": ["matematica", "geografia", "historia"],
   "formatos": ["resposta-curta"],
   "alternativas": 2,
   "duracaoMinutos": [2, 5],

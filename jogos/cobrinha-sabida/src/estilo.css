@@ -135,11 +135,21 @@ body {
   background: var(--perigo);
 }
 
+/* A área do tabuleiro ocupa a altura que sobra entre a pergunta e os controles, seja qual for o tamanho da pergunta. */
 .tabuleiro-area {
-  position: relative;
+  flex: 1 1 0;
+  min-height: 120px;
   width: 100%;
-  /* O tabuleiro é quadrado e cabe na altura que sobra entre o topo e os controles. */
-  max-width: min(100%, calc(100dvh - 340px));
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+
+/* O tabuleiro é o maior quadrado que cabe nessa área. */
+.tabuleiro-caixa {
+  position: relative;
+  width: min(100%, calc(100dvh - 340px));
+  width: min(100cqw, 100cqh);
   aspect-ratio: 1;
 }
 
@@ -230,7 +240,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
+  flex: none;
   min-height: 140px;
 }
 
@@ -378,7 +388,24 @@ body {
     flex: 0;
     min-height: 56px;
   }
-  .tabuleiro-area {
-    max-width: min(100%, calc(100dvh - 240px));
+}
+
+/* Tela baixa: a tela de começar e a de fim ficam enxutas, para caberem no tabuleiro menor. */
+@media (max-height: 640px) {
+  .sobreposicao {
+    padding: 12px;
+    gap: 8px;
+  }
+  .sobreposicao h1 {
+    font-size: 22px;
+  }
+  .instrucoes {
+    display: none;
+  }
+  .conta-resolvida {
+    font-size: 20px;
+  }
+  .explicacao {
+    font-size: 13px;
   }
 }

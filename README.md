@@ -54,5 +54,5 @@ Três coisas ficam separadas:
 ## Estado atual
 
 - Progresso salvo no navegador (`localStorage`). A camada `apps/plataforma/src/dados/armazenamento.ts` é a que muda quando houver servidor e contas.
-- Duas disciplinas, Matemática e Geografia, com 5 habilidades cada, e o jogo Cobrinha Sabida. Português aparece como "em breve".
+- Três disciplinas, Matemática, Geografia e História, e o jogo Cobrinha Sabida. Português aparece como "em breve".
 - Ainda não existem: contas de usuário, servidor, nivelamento, conquistas, sequência de dias e ranking.

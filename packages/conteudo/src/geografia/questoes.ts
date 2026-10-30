@@ -1,5 +1,6 @@
 import type { Estagio } from '@jogue/sdk-jogo';
-import { embaralhar, type Rng } from '../aleatorio';
+import type { Rng } from '../aleatorio';
+import { montar, sortear, type Errada as ErradaBase, type Pergunta as PerguntaBase } from '../alternativas';
 import type { QuestaoGerada } from '../tipos';
 import {
   CONTINENTE_DA_REGIAO,
@@ -34,20 +35,8 @@ const ROTULOS_ERRO: Record<TipoErro, string> = {
   'pais-trocado': 'País trocado',
 };
 
-interface Errada {
-  texto: string;
-  tipo: TipoErro;
-  explicacao: string;
-  /** Quanto menor, mais parecida com a certa e mais cedo ela é escolhida. */
-  peso: number;
-}
-
-interface Pergunta {
-  enunciado: string;
-  resolucao: string;
-  certa: string;
-  erradas: Errada[];
-}
+type Errada = ErradaBase<TipoErro>;
+type Pergunta = PerguntaBase<TipoErro>;
 
 /** Continentes vizinhos, para a errada ser uma confusão plausível. */
 const CONTINENTES_VIZINHOS: Record<Continente, Continente[]> = {
@@ -58,44 +47,7 @@ const CONTINENTES_VIZINHOS: Record<Continente, Continente[]> = {
   Oceania: ['Ásia', 'América'],
 };
 
-/** Sorteia um item; com ajuste alto, os menos conhecidos saem mais. */
-function sortear<T extends { fama: Fama }>(itens: readonly T[], ajuste: number, rng: Rng): T {
-  const pesos = itens.map((i) => 1 + ajuste * (i.fama - 1));
-  let sorte = rng() * pesos.reduce((a, b) => a + b, 0);
-  for (let i = 0; i < itens.length; i++) {
-    sorte -= pesos[i]!;
-    if (sorte < 0) return itens[i]!;
-  }
-  return itens.at(-1)!;
-}
-
 const cara = (rng: Rng) => rng() < 0.5;
-
-/** Monta a pergunta com a certa e as (alternativas − 1) erradas mais parecidas com ela. */
-function montar(habilidadeId: string, p: Pergunta, alternativas: number, rng: Rng): QuestaoGerada {
-  const usadas = new Set([p.certa]);
-  const erradas: Errada[] = [];
-  // Embaralha antes de ordenar pelo peso: entre erradas igualmente parecidas, a escolha varia.
-  for (const e of embaralhar(p.erradas, rng).sort((a, b) => a.peso - b.peso)) {
-    if (erradas.length === alternativas - 1) break;
-    if (usadas.has(e.texto)) continue;
-    usadas.add(e.texto);
-    erradas.push(e);
-  }
-  if (erradas.length < alternativas - 1) throw new Error(`Faltam alternativas em "${p.enunciado}"`);
-  return {
-    habilidadeId,
-    enunciado: p.enunciado,
-    resolucao: p.resolucao,
-    opcoes: embaralhar(
-      [
-        { texto: p.certa, correta: true },
-        ...erradas.map((e) => ({ texto: e.texto, correta: false, erro: { tipo: e.tipo, rotulo: ROTULOS_ERRO[e.tipo], explicacao: e.explicacao } })),
-      ],
-      rng,
-    ),
-  };
-}
 
 // ——— Estados e capitais do Brasil ———
 
@@ -389,5 +341,5 @@ export function questaoDeGeografia(habilidadeId: string, estagio: Estagio, ajust
   }
   const tema = TEMAS[habilidadeId];
   if (!tema) throw new Error(`Habilidade de Geografia desconhecida: ${habilidadeId}`);
-  return montar(habilidadeId, tema(estagio, ajuste, rng), alternativas, rng);
+  return montar(habilidadeId, tema(estagio, ajuste, rng), alternativas, ROTULOS_ERRO, rng);
 }

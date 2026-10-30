@@ -7,6 +7,8 @@ import { LETRAS, alternativasPorPergunta, type Estagio, type Questao } from '@jo
 import type { Rng } from './aleatorio';
 import { HABILIDADES_GEOGRAFIA } from './geografia/habilidades';
 import { questaoDeGeografia } from './geografia/questoes';
+import { HABILIDADES_HISTORIA } from './historia/habilidades';
+import { questaoDeHistoria } from './historia/questoes';
 import { HABILIDADES_MATEMATICA } from './matematica/habilidades';
 import { questaoDeMatematica } from './matematica/questoes';
 import { MATERIAS } from './materias';
@@ -15,7 +17,7 @@ import type { Habilidade, QuestaoGerada } from './tipos';
 export type { Habilidade, Materia, QuestaoGerada } from './tipos';
 export { MATERIAS } from './materias';
 
-export const HABILIDADES: Habilidade[] = [...HABILIDADES_MATEMATICA, ...HABILIDADES_GEOGRAFIA];
+export const HABILIDADES: Habilidade[] = [...HABILIDADES_MATEMATICA, ...HABILIDADES_GEOGRAFIA, ...HABILIDADES_HISTORIA];
 
 /** Gera uma pergunta com exatamente `alternativas` opções, uma delas certa. */
 type Gerador = (habilidadeId: string, estagio: Estagio, ajuste: number, alternativas: number, rng: Rng) => QuestaoGerada;
@@ -23,10 +25,11 @@ type Gerador = (habilidadeId: string, estagio: Estagio, ajuste: number, alternat
 const GERADORES: Record<string, Gerador> = {
   matematica: questaoDeMatematica,
   geografia: questaoDeGeografia,
+  historia: questaoDeHistoria,
 };
 
 /** Tentativas de sortear uma pergunta que ainda não saiu na partida, antes de aceitar uma repetida. */
-const TENTATIVAS_SEM_REPETIR = 30;
+const TENTATIVAS_SEM_REPETIR = 200;
 
 export const habilidadePorId = (id: string) => HABILIDADES.find((h) => h.id === id);
 export const materiaPorId = (id: string) => MATERIAS.find((m) => m.id === id);
