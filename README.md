@@ -2,7 +2,7 @@
 
 Plataforma de jogos de puzzle e tabuleiro que ensinam matemática, português, geografia e mais, para jovens e adultos. Cada partida alimenta um sistema de progressão do básico ao avançado.
 
-Esta é a **Fase 1 (Fundação)**: a plataforma completa com um único jogo, a **Cobrinha que Calcula**.
+Esta é a **Fase 1 (Fundação)**: a plataforma completa com um único jogo, a **Cobrinha Sabida**.
 
 ## Jogar
 
@@ -54,5 +54,5 @@ Três coisas ficam separadas:
 ## Estado atual
 
 - Progresso salvo no navegador (`localStorage`). A camada `apps/plataforma/src/dados/armazenamento.ts` é a que muda quando houver servidor e contas.
-- Uma disciplina (Matemática) com 5 habilidades e o jogo Cobrinha que Calcula. Português e Geografia aparecem como "em breve".
+- Uma disciplina (Matemática) com 5 habilidades e o jogo Cobrinha Sabida. Português e Geografia aparecem como "em breve".
 - Ainda não existem: contas de usuário, servidor, nivelamento, conquistas, sequência de dias e ranking.

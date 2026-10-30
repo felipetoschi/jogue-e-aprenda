@@ -45,6 +45,8 @@ npm run build      # gera dist/ (plataforma + jogos)
   qualquer disciplina, não só a respostas em número. O jogo mostra a letra para pegar e o texto ao lado da
   pergunta. Um jogo pode fixar quantas alternativas quer (2 a 5) em `alternativas` no manifesto; sem isso,
   vale o número do estágio. O tempo por pergunta segue o estágio de qualquer jogo.
+- **Erradas parecidas com a certa.** Em Matemática, toda alternativa errada tem o mesmo número de algarismos
+  da certa e fica a no máximo 25% de distância dela (`perto` em `contas.ts`), para não dar para descartar de olho.
 - **Todos começam no Básico.** Não existe prova nem atalho para pular estágio.
 - **Só sobe de estágio quem zera** a partida no estágio atual (acerta as 20), em todos os estágios. Zerar um
   estágio anterior não faz subir. A maestria existe só como indicador.
@@ -57,7 +59,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 - O progresso fica salvo no navegador (`localStorage`) por enquanto; ainda não há contas nem servidor Login com Google
   ou Facebook está planejado (anotado no plano), ainda sem implementação.
 
-## Cobrinha que Calcula (primeiro jogo)
+## Cobrinha Sabida (primeiro jogo, id `cobrinha-que-calcula`)
 
 - Sempre duas alternativas, A e B (`"alternativas": 2` no manifesto): no tabuleiro só as letras, cada uma
   com sua cor; o texto de cada uma fica embaixo da pergunta.

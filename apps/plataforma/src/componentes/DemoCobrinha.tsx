@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Demonstração da Cobrinha que Calcula na página inicial: a cobra vai sozinha até
+ * Demonstração da Cobrinha Sabida na página inicial: a cobra vai sozinha até
  * a letra da resposta certa de cada conta (A ou B). Não carrega o jogo; é só uma animação leve.
  */
 
@@ -194,7 +194,7 @@ export function DemoCobrinha() {
   }, []);
 
   return (
-    <figure className="demo" aria-label="Demonstração da Cobrinha que Calcula">
+    <figure className="demo" aria-label="Demonstração da Cobrinha Sabida">
       <div className="demo-conta" aria-live="off">
         {conta.texto} = <span className={conta.resposta === null ? 'demo-interrogacao' : 'demo-resposta'}>{conta.resposta ?? '?'}</span>
       </div>
