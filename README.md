@@ -30,8 +30,8 @@ Outros comandos:
 | `npm run build` | Gera o site final em `dist/` (plataforma + jogos) |
 | `npm run preview` | Serve o `dist/` em http://localhost:4173 |
 
-Para jogar a cobrinha sozinha, fora da plataforma: `npm run dev -w @jogue/jogo-cobrinha-que-calcula` e abra
-`http://localhost:5174/jogos/cobrinha-que-calcula/?habilidade=divisao&estagio=avancado` (as perguntas vêm do banco de conteúdo).
+Para jogar a cobrinha sozinha, fora da plataforma: `npm run dev -w @jogue/jogo-cobrinha-sabida` e abra
+`http://localhost:5174/jogos/cobrinha-sabida/?habilidade=divisao&estagio=avancado` (as perguntas vêm do banco de conteúdo).
 
 ## Estrutura
 
@@ -40,7 +40,7 @@ apps/plataforma         site principal (React): início, jogos, partida, resulta
 packages/conteudo       todo o conteúdo de todos os jogos, separado por disciplina (habilidades e perguntas)
 packages/progressao     regras de estrelas, XP, nível, maestria, estágios, revisão e desbloqueio
 packages/sdk-jogo       contrato, padrão dos jogos (PADRAO) e canal de mensagens entre plataforma e jogos
-jogos/cobrinha-que-calcula  o primeiro jogo, com build próprio (canvas, sem framework)
+jogos/cobrinha-sabida  o primeiro jogo, com build próprio (canvas, sem framework)
 scripts/montar-dist.mjs junta o build da plataforma e dos jogos em dist/
 docs/                   arquitetura e guia para criar jogos
 ```

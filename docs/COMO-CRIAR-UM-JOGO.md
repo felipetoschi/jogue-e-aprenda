@@ -1,6 +1,6 @@
 # Como criar um jogo
 
-1. Crie a pasta `jogos/<id-do-jogo>` com um app Vite próprio (veja `jogos/cobrinha-que-calcula` como modelo):
+1. Crie a pasta `jogos/<id-do-jogo>` com um app Vite próprio (veja `jogos/cobrinha-sabida` como modelo):
    - `package.json` com nome `@jogue/jogo-<id>`, scripts `dev`, `build`, `typecheck`, `test` e dependência `@jogue/sdk-jogo`;
    - `vite.config.ts` com `base: './'` no build e `/jogos/<id>/` em desenvolvimento, numa porta própria;
    - `manifesto.json` exportado em `exports["./manifesto"]`, com `materias` (disciplinas que o jogo oferece),

@@ -59,7 +59,7 @@ npm run build      # gera dist/ (plataforma + jogos)
 - O progresso fica salvo no navegador (`localStorage`) por enquanto; ainda não há contas nem servidor Login com Google
   ou Facebook está planejado (anotado no plano), ainda sem implementação.
 
-## Cobrinha Sabida (primeiro jogo, id `cobrinha-que-calcula`)
+## Cobrinha Sabida (primeiro jogo, id `cobrinha-sabida`; antes `cobrinha-que-calcula`)
 
 - Sempre duas alternativas, A e B (`"alternativas": 2` no manifesto): no tabuleiro só as letras, cada uma
   com sua cor; o texto de cada uma fica embaixo da pergunta.
