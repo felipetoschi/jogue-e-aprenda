@@ -94,7 +94,7 @@ describe('plataforma', () => {
     window.location.hash = '#/jogos';
     render(<App />);
     // Card fechado: ícone, nome, apresentação e Jogar.
-    expect(screen.getByRole('heading', { name: 'Cobrinha que Calcula' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cobrinha Sabida' })).toBeInTheDocument();
     expect(screen.queryByRole('radiogroup', { name: 'Nível' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Jogar' }));
     // Card aberto: escolhe habilidade e nível, e então Começar.

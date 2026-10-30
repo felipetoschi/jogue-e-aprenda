@@ -1,7 +1,7 @@
 import { ESTAGIOS } from '@jogue/sdk-jogo';
 import { describe, expect, it } from 'vitest';
 import { comSemente } from '../aleatorio';
-import { formatarNumero, gerarConta, HABILIDADES_SUPORTADAS } from './contas';
+import { formatarNumero, gerarConta, HABILIDADES_SUPORTADAS, perto } from './contas';
 
 /** Avalia o texto da conta para conferir a resposta de forma independente. */
 function avaliar(texto: string): number {
@@ -29,6 +29,23 @@ describe('gerarConta', () => {
       });
     }
   }
+
+  it('as erradas ficam perto da certa: mesmo número de algarismos e no máximo 25% de distância', () => {
+    for (const habilidade of HABILIDADES_SUPORTADAS) {
+      for (const estagio of ESTAGIOS) {
+        for (const quantidade of [2, 3]) {
+          for (let i = 0; i < 300; i++) {
+            const conta = gerarConta(habilidade, estagio, i % 3 === 0 ? 0 : 0.5, quantidade, rng);
+            for (const o of conta.opcoes.filter((o) => !o.correta)) {
+              const contexto = `${conta.texto} = ${conta.resposta}, errada ${o.valor}`;
+              expect(formatarNumero(o.valor).length, contexto).toBe(formatarNumero(conta.resposta).length);
+              expect(perto(o.valor, conta.resposta), contexto).toBe(true);
+            }
+          }
+        }
+      }
+    }
+  });
 
   it('não gera negativos nem decimais antes do Mestre', () => {
     for (const habilidade of HABILIDADES_SUPORTADAS) {

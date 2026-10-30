@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Jogo da cobrinha em que a cobra precisa comer o resultado certo da conta.",
+  "description": "Cobrinha Sabida: a cobra precisa comer a letra da alternativa certa.",
   "exports": {
     "./manifesto": "./manifesto.json"
   },

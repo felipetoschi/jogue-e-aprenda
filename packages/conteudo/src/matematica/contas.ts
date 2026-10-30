@@ -249,11 +249,22 @@ function porPouco(resposta: number): Candidato[] {
   return [1, -1, 2, -2, 10, -10, 3, -3, 5, -5].map((passo) => ({ valor: arred(resposta + passo * unidade), tipo: 'por-pouco' }));
 }
 
+/** Distância máxima entre uma errada e a certa: 25% da resposta, e no mínimo 2 casas da unidade mais baixa. */
+export const DISTANCIA_MAXIMA = 0.25;
+
+/** A errada está perto o bastante da certa para não dar para descartar só de olhar. */
+export function perto(valor: number, resposta: number): boolean {
+  const casas = (String(resposta).split('.')[1] ?? '').length;
+  const unidade = casas === 0 ? 1 : 10 ** -Math.min(casas, 2);
+  return Math.abs(valor - resposta) <= Math.max(2 * unidade, Math.abs(resposta) * DISTANCIA_MAXIMA) + 1e-9;
+}
+
 const ERROS_PROXIMOS: TipoErro[] = ['por-pouco', 'vizinho-tabuada', 'digitos-invertidos'];
 
 /**
  * Gera uma conta com uma opção certa e (quantidade − 1) falsas.
- * Com ajuste alto, as falsas preferem erros próximos do resultado.
+ * As falsas são sempre próximas da certa (mesmo número de algarismos e no máximo 25% de distância);
+ * entre elas, com ajuste alto, preferem os erros mais parecidos com o resultado.
  */
 export function gerarConta(habilidadeId: string, estagio: Estagio, ajuste: number, quantidade: number, rng: Rng): Conta {
   const gerador = GERADORES[habilidadeId];
@@ -264,9 +275,11 @@ export function gerarConta(habilidadeId: string, estagio: Estagio, ajuste: numbe
 
   const proximosPrimeiro = ajuste >= 0.5;
   const prioridade = (c: Candidato) => (ERROS_PROXIMOS.includes(c.tipo) === proximosPrimeiro ? 0 : 1);
+  // Errada longe da certa (outro número de algarismos ou distância grande) entrega a resposta: vai para o fim da fila.
+  const longe = (c: Candidato) => Number(formatarNumero(c.valor).length !== tamanhoResposta || !perto(c.valor, bruta.resposta));
   const candidatos = [...embaralhar(bruta.candidatos, rng), ...porPouco(bruta.resposta)]
-    .map((c, ordem) => ({ c, ordem, outroTamanho: Number(formatarNumero(c.valor).length !== tamanhoResposta) }))
-    .sort((x, y) => prioridade(x.c) - prioridade(y.c) || x.outroTamanho - y.outroTamanho || x.ordem - y.ordem)
+    .map((c, ordem) => ({ c, ordem, longe: longe(c) }))
+    .sort((x, y) => x.longe - y.longe || prioridade(x.c) - prioridade(y.c) || x.ordem - y.ordem)
     .map(({ c }) => c);
 
   const falsas: Opcao[] = [];
