@@ -56,6 +56,8 @@ npm run build      # gera dist/ (plataforma + jogos)
   conta como tentativa. Ao errar, o jogo mostra a pergunta resolvida e a explicação do erro.
 - **Escolha de nível:** no card do jogo (página Jogos), níveis lado a lado, com o mais alto já alcançado
   sempre selecionado; dá para escolher um anterior (vale XP, não muda a maestria do atual).
+- **Caminho curto:** quem já jogou pula a tela de apresentação do jogo (vai direto à contagem) e encontra o card
+  do jogo já aberto, no último tema jogado. "← Sair" de uma partida volta ao card do jogo, não ao Início.
 - **Menu:** Início (só a apresentação, abrindo com "O que é o Jogue e Aprenda?"), Jogos (um card por jogo,
   com ícone), Progresso (no topo, nível e o botão Continuar; depois disciplinas, erros, histórico).
 - O progresso fica salvo no navegador (`localStorage`) por enquanto; ainda não há contas nem servidor Login com Google
@@ -66,8 +68,9 @@ npm run build      # gera dist/ (plataforma + jogos)
 - Sempre duas alternativas, A e B (`"alternativas": 2` no manifesto): no tabuleiro só as letras, cada uma
   com sua cor; o texto de cada uma fica embaixo da pergunta.
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
-- Fim com correção (errou ou o tempo acabou): a correção fica na tela até o jogador tocar em Continuar
-  (Enter no PC). Nos outros finais (zerou, bateu), passa sozinho ao resultado depois de 3,2 s.
+- Fim de partida: a tela fica (com a correção, se errou) até o jogador escolher **Jogar de novo** (Enter no PC)
+  ou **Ver resultado**. O resultado é salvo na hora e a plataforma já manda a próxima partida pronta: jogar de
+  novo começa ali mesmo, sem recarregar. Quem zerou vê "Ir para o Intermediário" e já joga no estágio novo.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.
 - Habilidades de Geografia: Estados e capitais, Regiões do Brasil, Países e capitais, Continentes e Todos os temas.

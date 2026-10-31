@@ -110,7 +110,7 @@ export function Resultado() {
           Jogar de novo
         </Link>
         <Link className="botao secundario" to={linkParaEscolher(config.habilidadeId)}>
-          Trocar nível
+          Mudar tema ou nível
         </Link>
 
       </div>

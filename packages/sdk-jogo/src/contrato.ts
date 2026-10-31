@@ -1,5 +1,5 @@
 /** Versão do protocolo de mensagens. Mude ao quebrar compatibilidade. */
-export const VERSAO_PROTOCOLO = 2;
+export const VERSAO_PROTOCOLO = 3;
 
 /** Marca todas as mensagens, para ignorar qualquer outra coisa que chegue via postMessage. */
 export const CANAL = 'jogue-e-aprenda';
@@ -63,6 +63,19 @@ export interface ConfigPartida extends ConfigBase {
   rotulo: string;
   /** As perguntas da partida, vindas do banco de conteúdo da plataforma. */
   questoes: Questao[];
+  /** Quem já jogou antes pula a tela de apresentação e vai direto para a contagem. */
+  comecarDireto?: boolean;
+}
+
+/**
+ * O que a plataforma devolve ao jogo depois de salvar o resultado: a próxima partida já pronta,
+ * para o jogador jogar de novo ali mesmo, sem voltar ao menu.
+ */
+export interface PartidaRegistrada {
+  proxima: ConfigPartida;
+  xpGanho: number;
+  /** Estágio para o qual o jogador acabou de subir (zerou), ou null. */
+  promovidoPara: Estagio | null;
 }
 
 /** Um erro explicado, para a plataforma mostrar o que a pessoa confundiu. */
@@ -127,9 +140,16 @@ interface Envelope {
 }
 
 /** Corpo das mensagens que o jogo envia, sem o envelope. */
-export type CorpoDoJogo = { tipo: 'pronto' } | { tipo: 'resultado'; resultado: ResultadoJogo } | { tipo: 'sair' };
+export type CorpoDoJogo =
+  | { tipo: 'pronto' }
+  | { tipo: 'resultado'; resultado: ResultadoJogo }
+  | { tipo: 'sair' }
+  /** O jogador quer ver a tela de resultado da partida que acabou. */
+  | { tipo: 'verResultado' }
+  /** O jogador começou a próxima partida que a plataforma preparou. */
+  | { tipo: 'novaPartida'; partidaId: string };
 /** Corpo das mensagens que a plataforma envia, sem o envelope. */
-export type CorpoDaPlataforma = { tipo: 'iniciar'; config: ConfigPartida };
+export type CorpoDaPlataforma = { tipo: 'iniciar'; config: ConfigPartida } | { tipo: 'registrado'; registro: PartidaRegistrada };
 
 export type MensagemDoJogo = Envelope & CorpoDoJogo;
 export type MensagemDaPlataforma = Envelope & CorpoDaPlataforma;

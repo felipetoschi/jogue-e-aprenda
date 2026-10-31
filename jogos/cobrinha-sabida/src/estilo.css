@@ -179,6 +179,12 @@ body {
   display: none;
 }
 
+/* Contagem: só o nome da partida e o número, sem a apresentação. */
+.sobreposicao.contando h1,
+.sobreposicao.contando .instrucoes {
+  display: none;
+}
+
 .sobreposicao h1,
 .sobreposicao h2 {
   margin: 0;

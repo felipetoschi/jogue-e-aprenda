@@ -7,15 +7,23 @@ import {
   type ConfigPartida,
   type CorpoDoJogo,
   type MensagemDaPlataforma,
+  type PartidaRegistrada,
   type ResultadoJogo,
 } from './contrato';
 
 export interface ConexaoPlataforma {
+  /** A partida atual. Muda quando o jogador começa a próxima com comecarProxima. */
   config: ConfigPartida;
   /** true quando o jogo roda sozinho, fora da plataforma (útil no desenvolvimento). */
   avulso: boolean;
   enviarResultado(resultado: Omit<ResultadoJogo, 'partidaId'>): void;
   sair(): void;
+  /** Avisa quando a plataforma salvou o resultado e já preparou a próxima partida. */
+  aoRegistrar(funcao: (registro: PartidaRegistrada) => void): void;
+  /** Leva o jogador à tela de resultado da partida que acabou. */
+  verResultado(): void;
+  /** Começa a próxima partida preparada pela plataforma; a config dela passa a valer. */
+  comecarProxima(proxima: ConfigPartida): void;
 }
 
 export interface OpcoesConexao {
@@ -41,6 +49,9 @@ export function conectarAPlataforma(opcoes: OpcoesConexao): Promise<ConexaoPlata
         avulso: true,
         enviarResultado: (r) => console.info('[jogo avulso] resultado', { ...r, partidaId: config.partidaId }),
         sair: () => console.info('[jogo avulso] sair'),
+        aoRegistrar: () => {},
+        verResultado: () => console.info('[jogo avulso] ver resultado'),
+        comecarProxima: () => {},
       };
     });
   }
@@ -49,22 +60,38 @@ export function conectarAPlataforma(opcoes: OpcoesConexao): Promise<ConexaoPlata
     pai.postMessage({ canal: CANAL, versao: VERSAO_PROTOCOLO, ...msg }, destinoDe(origem));
 
   return new Promise((resolve) => {
+    let conexao: ConexaoPlataforma | null = null;
+    let aoRegistrar: ((registro: PartidaRegistrada) => void) | null = null;
+    let enviado = false;
+
     function aoReceber(evento: MessageEvent) {
       if ((origemUtil(origem) && evento.origin !== origem) || evento.source !== pai) return;
-      if (!ehMensagem<MensagemDaPlataforma>(evento.data) || evento.data.tipo !== 'iniciar') return;
-      window.removeEventListener('message', aoReceber);
-      const { config } = evento.data;
-      let enviado = false;
-      resolve({
-        config,
-        avulso: false,
-        enviarResultado(resultado) {
-          if (enviado) return;
-          enviado = true;
-          enviar({ tipo: 'resultado', resultado: { ...resultado, partidaId: config.partidaId } });
-        },
-        sair: () => enviar({ tipo: 'sair' }),
-      });
+      if (!ehMensagem<MensagemDaPlataforma>(evento.data)) return;
+      const msg = evento.data;
+      if (msg.tipo === 'iniciar' && !conexao) {
+        conexao = {
+          config: msg.config,
+          avulso: false,
+          enviarResultado(resultado) {
+            if (enviado) return;
+            enviado = true;
+            enviar({ tipo: 'resultado', resultado: { ...resultado, partidaId: conexao!.config.partidaId } });
+          },
+          sair: () => enviar({ tipo: 'sair' }),
+          aoRegistrar: (funcao) => {
+            aoRegistrar = funcao;
+          },
+          verResultado: () => enviar({ tipo: 'verResultado' }),
+          comecarProxima(proxima) {
+            conexao!.config = proxima;
+            enviado = false;
+            enviar({ tipo: 'novaPartida', partidaId: proxima.partidaId });
+          },
+        };
+        resolve(conexao);
+      } else if (msg.tipo === 'registrado') {
+        aoRegistrar?.(msg.registro);
+      }
     }
     window.addEventListener('message', aoReceber);
     enviar({ tipo: 'pronto' });
