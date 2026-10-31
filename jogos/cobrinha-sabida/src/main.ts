@@ -19,7 +19,7 @@ const TITULOS_FIM: Record<MotivoFim, string> = {
 /** Até quantas letras a pergunta usa a letra grande. */
 const LIMITE_CONTA_CURTA = 14;
 
-/** Tempo da animação de fim antes de devolver o resultado à plataforma. */
+/** Tempo da animação de fim antes de devolver o resultado à plataforma, quando não há correção para ler. */
 const ESPERA_FIM_MS = 3200;
 
 /**
@@ -229,7 +229,23 @@ class Partida {
         tempoMedioSegundos: tempos.length ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : null,
       },
     };
-    setTimeout(() => this.conexao.enviarResultado(resultado), this.conexao.avulso ? 0 : ESPERA_FIM_MS);
+    const enviar = () => this.conexao.enviarResultado(resultado);
+    // Com correção para ler (errou ou o tempo acabou), a tela fica até o jogador tocar em Continuar.
+    const temCorrecao = fim.motivo === 'erro' || fim.motivo === 'energia';
+    const continuar = el<HTMLButtonElement>('botao-ver-resultado');
+    continuar.hidden = this.conexao.avulso || !temCorrecao;
+    if (this.conexao.avulso) {
+      enviar();
+    } else if (temCorrecao) {
+      continuar.onclick = () => {
+        continuar.onclick = null;
+        enviar();
+      };
+      // No PC, Enter já aperta o botão.
+      continuar.focus();
+    } else {
+      setTimeout(enviar, ESPERA_FIM_MS);
+    }
   }
 
   private reiniciar() {

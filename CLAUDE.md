@@ -66,6 +66,8 @@ npm run build      # gera dist/ (plataforma + jogos)
 - Sempre duas alternativas, A e B (`"alternativas": 2` no manifesto): no tabuleiro só as letras, cada uma
   com sua cor; o texto de cada uma fica embaixo da pergunta.
 - Setas na tela no celular (sem joystick), teclado no PC, deslizar no tabuleiro também funciona.
+- Fim com correção (errou ou o tempo acabou): a correção fica na tela até o jogador tocar em Continuar
+  (Enter no PC). Nos outros finais (zerou, bateu), passa sozinho ao resultado depois de 3,2 s.
 - Velocidade começa devagar (3 a 6 casas/s) e sobe 0,15 por acerto até 5 a 8 casas/s, conforme o estágio.
 - Habilidades de Matemática: Adição, Subtração, Multiplicação, Divisão e Todas as operações.
 - Habilidades de Geografia: Estados e capitais, Regiões do Brasil, Países e capitais, Continentes e Todos os temas.
