@@ -32,6 +32,19 @@
    ```
 
    Fora da plataforma, `configAvulsa` é usada e o resultado vai para o console.
+
+   Para "Jogar de novo" sem sair do jogo: envie o resultado assim que a partida acabar. A plataforma salva o
+   progresso e responde com a próxima partida pronta:
+
+   ```ts
+   conexao.aoRegistrar(({ proxima, xpGanho, promovidoPara }) => {
+     // mostre "Jogar de novo" (ou "Ir para o <estágio>" se promovidoPara) e, ao tocar:
+     conexao.comecarProxima(proxima); // conexao.config passa a ser a nova partida
+   });
+   conexao.verResultado(); // leva à tela de resultado da partida que acabou
+   ```
+
+   Com `conexao.config.comecarDireto`, o jogador já conhece o jogo: pule a apresentação e vá direto à contagem.
 3. Registre o manifesto em `apps/plataforma/src/conteudo/jogos.ts` e adicione `@jogue/jogo-<id>` às dependências da plataforma.
 4. Para o jogo subir junto no `npm run dev`, inclua-o no script `dev` da raiz e um `proxy` para `/jogos/<id>` em `apps/plataforma/vite.config.ts`.
 
@@ -61,7 +74,8 @@ Checklist para aprovar um jogo novo:
 - [ ] Usa `PADRAO` e `segundosPorPergunta` para alternativas e tempo
 - [ ] Mostra a letra de cada alternativa e o texto dela; textos longos (nomes, frases curtas) cabem no celular
 - [ ] Erro e tempo esgotado encerram a partida; erros de reflexo não contam como tentativa
-- [ ] Mostra a resolução e a explicação ao errar
+- [ ] Mostra a resolução e a explicação ao errar, até o jogador escolher Jogar de novo ou Ver resultado
+- [ ] Oferece Jogar de novo no fim (`aoRegistrar` + `comecarProxima`) e respeita `comecarDireto`
 - [ ] Envia pontuação padrão, acertos, tentativas e como terminou
 - [ ] Funciona no PC (teclado) e no celular (toque), com pausa e saída
 - [ ] Tem ícone e apresentação curta no manifesto

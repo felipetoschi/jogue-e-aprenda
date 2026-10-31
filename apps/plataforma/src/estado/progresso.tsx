@@ -1,6 +1,6 @@
 import { aplicarResultado, perfilNovo, type PerfilProgresso, type ResumoPartida } from '@jogue/progressao';
 import type { ConfigPartida, ResultadoJogo } from '@jogue/sdk-jogo';
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { HABILIDADES } from '@jogue/conteudo';
 import {
   apagarTudo,
@@ -14,8 +14,8 @@ import {
 interface ValorProgresso {
   perfil: PerfilProgresso;
   historico: RegistroPartida[];
-  /** Aplica o resultado à progressão, salva e devolve o resumo para a tela de resultado. */
-  registrarResultado(jogoId: string, config: ConfigPartida, resultado: ResultadoJogo): ResumoPartida;
+  /** Aplica o resultado à progressão, salva e devolve o resumo e o perfil já atualizado. */
+  registrarResultado(jogoId: string, config: ConfigPartida, resultado: ResultadoJogo): { resumo: ResumoPartida; perfil: PerfilProgresso };
   registrarAbandono(jogoId: string, config: ConfigPartida): void;
   apagarProgresso(): void;
 }
@@ -25,6 +25,9 @@ const Contexto = createContext<ValorProgresso | null>(null);
 export function ProvedorProgresso({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState(carregarPerfil);
   const [historico, setHistorico] = useState(carregarHistorico);
+  // Partidas seguidas no mesmo jogo terminam antes de a tela redesenhar: o perfil mais novo fica aqui.
+  const perfilAtual = useRef(perfil);
+  perfilAtual.current = perfil;
 
   const registrar = useCallback((registro: RegistroPartida) => {
     setHistorico((atual) => salvarHistorico([registro, ...atual]));
@@ -32,13 +35,14 @@ export function ProvedorProgresso({ children }: { children: ReactNode }) {
 
   const registrarResultado = useCallback(
     (jogoId: string, config: ConfigPartida, resultado: ResultadoJogo) => {
-      const { perfil: novo, resumo } = aplicarResultado(perfil, config, resultado, HABILIDADES);
+      const { perfil: novo, resumo } = aplicarResultado(perfilAtual.current, config, resultado, HABILIDADES);
+      perfilAtual.current = novo;
       setPerfil(novo);
       salvarPerfil(novo);
       registrar({ id: config.partidaId, jogoId, data: new Date().toISOString(), config, resultado, resumo });
-      return resumo;
+      return { resumo, perfil: novo };
     },
-    [perfil, registrar],
+    [registrar],
   );
 
   const registrarAbandono = useCallback(
@@ -49,7 +53,8 @@ export function ProvedorProgresso({ children }: { children: ReactNode }) {
 
   const apagarProgresso = useCallback(() => {
     apagarTudo();
-    setPerfil(perfilNovo());
+    perfilAtual.current = perfilNovo();
+    setPerfil(perfilAtual.current);
     setHistorico([]);
   }, []);
 

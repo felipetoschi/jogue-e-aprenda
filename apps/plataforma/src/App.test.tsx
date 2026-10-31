@@ -100,6 +100,20 @@ describe('plataforma', () => {
     expect(within(niveis).getByRole('radio', { name: 'Básico' })).toHaveAttribute('aria-checked', 'true');
   });
 
+  it('quem já jogou encontra o card aberto no último tema que jogou', () => {
+    localStorage.setItem(
+      'jogue-e-aprenda:historico',
+      JSON.stringify([
+        { id: 'x', jogoId: 'cobrinha-sabida', data: new Date().toISOString(), config: { habilidadeId: 'datas-brasil' }, resultado: null, resumo: null },
+      ]),
+    );
+    window.location.hash = '#/jogos';
+    render(<App />);
+    expect(screen.getByRole('radio', { name: 'História' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Datas do Brasil' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('button', { name: 'Começar' })).toBeInTheDocument();
+  });
+
   it('só carrega o jogo, num iframe, ao clicar em Jogar', () => {
     window.location.hash = '#/jogos';
     render(<App />);

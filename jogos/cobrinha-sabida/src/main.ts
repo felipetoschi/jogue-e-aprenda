@@ -1,5 +1,14 @@
 import './estilo.css';
-import { ESTAGIOS, NOMES_ESTAGIO, PADRAO, conectarAPlataforma, type ConexaoPlataforma, type Estagio, type Questao } from '@jogue/sdk-jogo';
+import {
+  ESTAGIOS,
+  NOMES_ESTAGIO,
+  PADRAO,
+  conectarAPlataforma,
+  type ConexaoPlataforma,
+  type Estagio,
+  type PartidaRegistrada,
+  type Questao,
+} from '@jogue/sdk-jogo';
 import { Desenhista, corDaLetra } from './desenho';
 import { ouvirDeslize, ouvirSetas, ouvirTeclado } from './entrada';
 import { avancar, criarJogo, pontuacaoDe, virar, type EstadoJogo, type Fim, type MotivoFim } from './jogo';
@@ -18,9 +27,6 @@ const TITULOS_FIM: Record<MotivoFim, string> = {
 
 /** Até quantas letras a pergunta usa a letra grande. */
 const LIMITE_CONTA_CURTA = 14;
-
-/** Tempo da animação de fim antes de devolver o resultado à plataforma, quando não há correção para ler. */
-const ESPERA_FIM_MS = 3200;
 
 /**
  * Fora da plataforma (desenvolvimento), a configuração vem da URL — ?habilidade=divisao&estagio=avancado&ajuste=0.5 —
@@ -53,15 +59,14 @@ class Partida {
   private fase: Fase = 'preparo';
   private ultimoQuadro = 0;
   private questaoNaTela: Questao | null = null;
+  /** Resultado salvo pela plataforma, com a próxima partida pronta. */
+  private registro: PartidaRegistrada | null = null;
   private readonly desenhista = new Desenhista(el<HTMLCanvasElement>('tabuleiro'));
   private readonly retorno = new Retorno();
 
   constructor(private readonly conexao: ConexaoPlataforma) {
     this.estado = this.novoEstado();
-    const { modo, rotulo } = conexao.config;
-    const meta = this.estado.meta;
-    el('rotulo').textContent = `${rotulo}${modo === 'revisao' ? ' · Revisão' : ''}`;
-    el('preparo-detalhe').textContent = `${rotulo}. Acerte ${meta} perguntas para vencer.`;
+    this.mostrarRotulo();
     this.atualizarBotaoSom();
 
     el('botao-comecar').addEventListener('click', () => {
@@ -76,7 +81,13 @@ class Partida {
     el('botao-continuar').addEventListener('click', () => this.alternarPausa());
     el('botao-pausa').addEventListener('click', () => this.alternarPausa());
     el('botao-sair').addEventListener('click', () => this.conexao.sair());
-    el('botao-de-novo').addEventListener('click', () => this.reiniciar());
+    el('botao-de-novo').addEventListener('click', () => this.jogarDeNovo());
+    el('botao-ver-resultado').addEventListener('click', () => this.conexao.verResultado());
+    conexao.aoRegistrar((registro) => this.oferecerProxima(registro));
+    // O som só pode começar depois de um toque ou tecla: libera no primeiro, seja qual for.
+    for (const tipo of ['pointerdown', 'keydown'] as const) {
+      document.addEventListener(tipo, () => this.retorno.liberar(), { once: true, capture: true });
+    }
 
     const aoVirar = (d: Parameters<typeof virar>[1]) => this.fase === 'jogando' && virar(this.estado, d);
     ouvirTeclado({ aoVirar, aoPausar: () => this.alternarPausa() });
@@ -88,6 +99,13 @@ class Partida {
 
     this.atualizarHud();
     requestAnimationFrame((t) => this.quadro(t));
+    if (conexao.config.comecarDireto) this.contagem();
+  }
+
+  private mostrarRotulo() {
+    const { modo, rotulo } = this.conexao.config;
+    el('rotulo').textContent = `${rotulo}${modo === 'revisao' ? ' · Revisão' : ''}`;
+    el('preparo-detalhe').textContent = `${rotulo}. Acerte ${this.estado.meta} perguntas para vencer.`;
   }
 
   private novoEstado() {
@@ -97,6 +115,9 @@ class Partida {
 
   private contagem() {
     this.fase = 'contagem';
+    el('tela-preparo').hidden = false;
+    // Na contagem, a apresentação some: fica só o nome da partida e o número.
+    el('tela-preparo').classList.add('contando');
     el('botao-comecar').hidden = true;
     const contador = el('contagem');
     contador.hidden = false;
@@ -110,6 +131,7 @@ class Partida {
       }
       clearInterval(intervalo);
       el('tela-preparo').hidden = true;
+      el('tela-preparo').classList.remove('contando');
       this.fase = 'jogando';
       this.ultimoQuadro = performance.now();
     }, 700);
@@ -211,8 +233,7 @@ class Partida {
     el('fim-titulo').textContent = TITULOS_FIM[fim.motivo];
     el('fim-conta').textContent = fim.motivo === 'erro' || fim.motivo === 'energia' ? resolucao : '';
     el('fim-explicacao').textContent = erro?.explicacao ?? '';
-    el('fim-pontos').textContent = `${estado.acertos} de ${estado.meta} perguntas · maior tamanho ${estado.maiorTamanho}`;
-    el('botao-de-novo').hidden = !this.conexao.avulso;
+    el('fim-pontos').textContent = `${estado.acertos} de ${estado.meta} · tamanho ${estado.maiorTamanho}`;
     el('tela-fim').hidden = false;
 
     const tempos = estado.temposDeAcerto;
@@ -229,33 +250,47 @@ class Partida {
         tempoMedioSegundos: tempos.length ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : null,
       },
     };
-    const enviar = () => this.conexao.enviarResultado(resultado);
-    // Com correção para ler (errou ou o tempo acabou), a tela fica até o jogador tocar em Continuar.
-    const temCorrecao = fim.motivo === 'erro' || fim.motivo === 'energia';
-    const continuar = el<HTMLButtonElement>('botao-ver-resultado');
-    continuar.hidden = this.conexao.avulso || !temCorrecao;
-    if (this.conexao.avulso) {
-      enviar();
-    } else if (temCorrecao) {
-      continuar.onclick = () => {
-        continuar.onclick = null;
-        enviar();
-      };
-      // No PC, Enter já aperta o botão.
-      continuar.focus();
-    } else {
-      setTimeout(enviar, ESPERA_FIM_MS);
-    }
+    // O resultado vai na hora: a plataforma salva o progresso e devolve a próxima partida pronta.
+    this.conexao.enviarResultado(resultado);
+    this.registro = null;
+    const deNovo = el<HTMLButtonElement>('botao-de-novo');
+    deNovo.textContent = 'Jogar de novo';
+    // Fora da plataforma não há próxima partida para esperar: joga de novo com as mesmas perguntas.
+    deNovo.hidden = !this.conexao.avulso;
+    el('botao-ver-resultado').hidden = this.conexao.avulso;
+    if (this.conexao.avulso) deNovo.focus();
   }
 
+  /** A plataforma salvou o resultado: mostra o XP e oferece a próxima partida, que já está pronta. */
+  private oferecerProxima(registro: PartidaRegistrada) {
+    if (this.fase !== 'fim') return;
+    this.registro = registro;
+    const deNovo = el<HTMLButtonElement>('botao-de-novo');
+    deNovo.textContent = registro.promovidoPara ? `Ir para o ${NOMES_ESTAGIO[registro.promovidoPara]}` : 'Jogar de novo';
+    deNovo.hidden = false;
+    // No PC, Enter já joga de novo.
+    deNovo.focus();
+    if (registro.xpGanho > 0) el('fim-pontos').textContent += ` · +${registro.xpGanho} XP`;
+  }
+
+  private jogarDeNovo() {
+    if (this.registro) {
+      this.conexao.comecarProxima(this.registro.proxima);
+      this.registro = null;
+    } else if (!this.conexao.avulso) {
+      return;
+    }
+    this.reiniciar();
+  }
+
+  /** Nova partida com a config atual da conexão, direto na contagem. */
   private reiniciar() {
     this.estado = this.novoEstado();
+    this.questaoNaTela = null;
+    this.mostrarRotulo();
     el('tela-fim').hidden = true;
-    el('tela-preparo').hidden = false;
-    el('botao-comecar').hidden = false;
-    el('contagem').hidden = true;
-    this.fase = 'preparo';
     this.atualizarHud();
+    this.contagem();
   }
 }
 

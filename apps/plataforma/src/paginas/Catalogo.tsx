@@ -33,19 +33,27 @@ export function Catalogo() {
 }
 
 function CartaoJogo({ jogo, habilidadePedida }: { jogo: ManifestoJogo; habilidadePedida?: string }) {
-  const { perfil } = useProgresso();
+  const { perfil, historico } = useProgresso();
   const navegar = useNavigate();
   const materias = materiasDoJogo(jogo);
   const todas = habilidadesDoJogo(jogo);
   const abertas = todas.filter((h) => estaDesbloqueada(perfil, h, HABILIDADES));
   const sugerida = sugerirProximaPartida(perfil, abertas)?.habilidadeId;
-  const inicial = abertas.find((h) => h.id === habilidadePedida) ?? abertas.find((h) => h.id === sugerida) ?? abertas[0];
+  // Volta para o que a pessoa jogou por último neste jogo; sem histórico, a habilidade sugerida.
+  const ultima = historico.find((r) => r.jogoId === jogo.id)?.config.habilidadeId;
+  const inicial =
+    abertas.find((h) => h.id === habilidadePedida) ??
+    abertas.find((h) => h.id === ultima) ??
+    abertas.find((h) => h.id === sugerida) ??
+    abertas[0];
 
   const [materiaId, setMateriaId] = useState(inicial?.materiaId ?? materias[0]?.id);
   const [habilidadeId, setHabilidadeId] = useState(inicial?.id);
   const [escolhido, setEscolhido] = useState<Estagio | null>(null);
-  // Vindo de "Treinar" no mapa, o card já abre com a habilidade marcada.
-  const [aberto, setAberto] = useState(() => !!habilidadePedida && todas.some((h) => h.id === habilidadePedida));
+  // Vindo de "Treinar" ou de uma partida, ou para quem já jogou, o card já abre pronto para Começar.
+  const [aberto, setAberto] = useState(
+    () => (!!habilidadePedida && todas.some((h) => h.id === habilidadePedida)) || ultima !== undefined,
+  );
 
   const daMateria = todas.filter((h) => h.materiaId === materiaId);
   const def = daMateria.find((h) => h.id === habilidadeId) ?? daMateria.find((h) => estaDesbloqueada(perfil, h, HABILIDADES));
